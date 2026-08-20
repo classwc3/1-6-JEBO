@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>조성우 프로필</title>
+  <meta name="description" content="조성우의 개인 프로필입니다.">
+  <link rel="canonical" href="https://조성우.kro.kr/">
+
+  <!-- SEO / 공유 미리보기 -->
+  <meta property="og:type" content="profile">
+  <meta property="og:url" content="https://조성우.kro.kr/">
+  <meta property="og:title" content="조성우 · Profile">
+  <meta property="og:description" content="조성우의 개인 프로필입니다.">
+  <meta property="og:image" content="https://lh3.googleusercontent.com/d/1AFtKdzVmuyZdTx7b8t7jBtyp51TLeQoB=w1200">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#2563EB">
+
+  <link rel="icon" href="https://lh3.googleusercontent.com/d/1AFtKdzVmuyZdTx7b8t7jBtyp51TLeQoB=w128">
+
+  <style>
+    html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#EFF6FF; }
+    #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
+      align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
+      transition:opacity .4s; font-family:system-ui,-apple-system,sans-serif; }
+    #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
+      border-radius:50%; animation:s .8s linear infinite; }
+    #boot .msg{ color:#64748b; font-size:.85rem; display:none; text-align:center; padding:0 24px; }
+    #boot .msg a{ color:#2563EB; font-weight:600; }
+    @keyframes s{ to{ transform:rotate(360deg); } }
+    iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div class="sp"></div>
+    <div class="msg" id="bootMsg">
+      로딩이 오래 걸리나요?<br>
+      <a id="directLink" href="#" target="_blank">여기를 눌러 새 창에서 열기</a>
+    </div>
+  </div>
+
+  <!-- ▼▼▼ 본인의 GAS 웹앱 배포 URL (…/exec 로 끝나는 주소) ▼▼▼ -->
+  <iframe
+    id="site"
+    src="https://script.google.com/macros/s/AKfycbznNEcWjQkN87w7AujuCfwTHNmXgmdzvIYE4SEOowjJ6cUseBlUNnek-mfrDCDYHDpL/exec"
+    title="Profile"
+    allow="clipboard-write; clipboard-read"
+    loading="eager"></iframe>
+  <!-- ▲▲▲ ▲▲▲ -->
+
+  <script>
+    var iframe = document.getElementById('site');
+    var boot = document.getElementById('boot');
+    var loaded = false;
+    document.getElementById('directLink').href = iframe.src;
+    iframe.addEventListener('load', function(){
+      loaded = true;
+      boot.style.opacity = '0';
+      setTimeout(function(){ if(boot) boot.remove(); }, 400);
+    });
+    setTimeout(function(){
+      if(!loaded){ document.getElementById('bootMsg').style.display = 'block'; }
+    }, 6000);
+  </script>
+</body>
+</html>

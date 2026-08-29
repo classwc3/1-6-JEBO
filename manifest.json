@@ -1,0 +1,9 @@
+{
+  "name": "1학년 6반 건의 서비스",
+  "short_name": "1-6 건의함",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EFF6FF",
+  "theme_color": "#2563EB",
+  "icons": [{ "src": "https://i.imgur.com/Ooev1wG.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}

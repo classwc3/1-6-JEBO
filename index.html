@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
   <title>1학년 6반 건의 서비스</title>
   <meta name="description" content="1학년 6반 건의 서비스입니다.">
   <link rel="canonical" href="https://1-6.웹.한국/">
   <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.googleusercontent.com">
 
   <!-- SEO / 공유 미리보기 -->
   <meta property="og:type" content="profile">
@@ -19,25 +19,48 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#2563EB">
-
   <link rel="icon" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="apple-touch-icon" href="https://i.imgur.com/Ooev1wG.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <style>
     html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#EFF6FF; }
-    #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
-      align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
-      transition:opacity .4s; font-family:system-ui,-apple-system,sans-serif; }
-    #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
-      border-radius:50%; animation:s .8s linear infinite; }
-    #boot .msg{ color:#64748b; font-size:.85rem; display:none; text-align:center; padding:0 24px; }
-    #boot .msg a{ color:#2563EB; font-weight:600; }
-    @keyframes s{ to{ transform:rotate(360deg); } }
+
+    /* ★★★ 로딩 화면은 '숨길 때 클릭을 통과'시켜야 한다.
+       opacity:0 만 주면 눈에는 안 보이지만 화면 전체를 덮은 채로 남아
+       클릭도 스크롤도 전부 이 판이 먹어버린다. (지금 겪으신 증상) */
+    #boot{ position:fixed; inset:0; z-index:3; display:flex; flex-direction:column;
+      gap:20px; align-items:center; justify-content:center; background:#EFF6FF;
+      transition:opacity .35s ease, visibility .35s;
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; }
+    #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+
+    /* 시간표 모양 뼈대 — 스피너보다 '오는 중'으로 읽힌다 */
+    #boot .skel{ width:min(420px,86vw); }
+    #boot .skel .row{ display:flex; gap:8px; margin-bottom:8px; }
+    #boot .skel .b{ height:44px; border-radius:11px; flex:1;
+      background:linear-gradient(90deg,#E2ECFB,#D6E4F7,#E2ECFB); background-size:200% 100%;
+      animation:sh 1.3s infinite; }
+    #boot .skel .b.n{ flex:0 0 42px; }
+    @keyframes sh{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    #boot .tt{ color:#1e40af; font-size:.95rem; font-weight:700; }
+    #boot .msg{ color:#64748b; font-size:.82rem; display:none; text-align:center; padding:0 24px; line-height:1.6; }
+    #boot .msg a{ color:#2563EB; font-weight:700; }
+
     iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
   </style>
 </head>
 <body>
   <div id="boot">
-    <div class="sp"></div>
+    <div class="tt">시간표를 불러오는 중…</div>
+    <div class="skel">
+      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
+      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
+      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
+      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
+    </div>
     <div class="msg" id="bootMsg">
       로딩이 오래 걸리나요?<br>
       <a id="directLink" href="#" target="_blank">여기를 눌러 새 창에서 열기</a>
@@ -53,17 +76,28 @@
 
   <script>
     var iframe = document.getElementById('site');
-    var boot = document.getElementById('boot');
+    var boot   = document.getElementById('boot');
     var loaded = false;
+
     document.getElementById('directLink').href = iframe.src;
-    iframe.addEventListener('load', function(){
+
+    function hideBoot(){
+      if(loaded) return;
       loaded = true;
-      boot.style.opacity = '0';
-      // setTimeout(function(){ if(boot) boot.remove(); }, 400);
-    });
-    // setTimeout(function(){
-    //   if(!loaded){ document.getElementById('bootMsg').style.display = 'block'; }
-    // }, 6000);
+      boot.classList.add('hide');      /* 클릭이 통과되도록 숨긴다 */
+      setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
+    }
+
+    iframe.addEventListener('load', hideBoot);
+
+    /* 안전장치: load 이벤트가 안 와도 12초 뒤에는 반드시 걷어낸다.
+       (걷어내지 않으면 화면이 통째로 먹통이 된다) */
+    setTimeout(hideBoot, 12000);
+
+    /* 6초가 지나도 안 뜨면 새 창으로 여는 안내 */
+    setTimeout(function(){
+      if(!loaded) document.getElementById('bootMsg').style.display = 'block';
+    }, 6000);
   </script>
 </body>
 </html>

@@ -37,11 +37,11 @@
 </head>
 <body>
   <div id="boot">
-    <!-- <div class="sp"></div>
+    <div class="sp"></div>
     <div class="msg" id="bootMsg">
       로딩이 오래 걸리나요?<br>
       <a id="directLink" href="#" target="_blank">여기를 눌러 새 창에서 열기</a>
-    </div> -->
+    </div>
   </div>
 
   <iframe
@@ -59,11 +59,11 @@
     iframe.addEventListener('load', function(){
       loaded = true;
       boot.style.opacity = '0';
-      setTimeout(function(){ if(boot) boot.remove(); }, 400);
+      // setTimeout(function(){ if(boot) boot.remove(); }, 400);
     });
-    setTimeout(function(){
-      if(!loaded){ document.getElementById('bootMsg').style.display = 'block'; }
-    }, 6000);
+    // setTimeout(function(){
+    //   if(!loaded){ document.getElementById('bootMsg').style.display = 'block'; }
+    // }, 6000);
   </script>
 </body>
 </html>

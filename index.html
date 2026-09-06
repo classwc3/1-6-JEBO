@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://script.googleusercontent.com">
-
   <!-- SEO / 공유 미리보기 -->
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://1-6.웹.한국/">
@@ -23,60 +22,41 @@
   <link rel="apple-touch-icon" href="https://i.imgur.com/Ooev1wG.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
   <style>
     html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#EFF6FF; }
-
-    #boot{ position:fixed; inset:0; z-index:3; display:flex; flex-direction:column;
-      gap:20px; align-items:center; justify-content:center; background:#EFF6FF;
-      transition:opacity .35s ease, visibility .35s;
-      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; }
+    #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
+      align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
+      transition:opacity .4s, visibility .4s; font-family:system-ui,-apple-system,sans-serif; }
+    /* ★ 숨길 때 클릭이 통과되어야 한다. opacity:0 만 주면 투명한 판이
+       화면 전체를 덮은 채 남아 클릭·스크롤을 전부 먹는다. */
     #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
-
-    /* 시간표 모양 뼈대 — 스피너보다 '오는 중'으로 읽힌다 */
-    #boot .tt{ color:#1e40af; font-size:.95rem; font-weight:700; }
-    #boot .skel{ width:min(420px,86vw); }
-    #boot .skel .row{ display:flex; gap:8px; margin-bottom:8px; }
-    #boot .skel .b{ height:44px; border-radius:11px; flex:1;
-      background:linear-gradient(90deg,#E2ECFB,#D6E4F7,#E2ECFB); background-size:200% 100%;
-      animation:sh 1.3s infinite; }
-    #boot .skel .b.n{ flex:0 0 42px; }
-    @keyframes sh{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
+    #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
+      border-radius:50%; animation:s .8s linear infinite; }
+    @keyframes s{ to{ transform:rotate(360deg); } }
     iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
   </style>
 </head>
 <body>
   <div id="boot">
-    <div class="tt">시간표를 불러오는 중…</div>
-    <div class="skel">
-      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
-      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
-      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
-      <div class="row"><div class="b n"></div><div class="b"></div><div class="b"></div><div class="b"></div></div>
-    </div>
+    <div class="sp"></div>
   </div>
-
   <iframe
     id="site"
     src="https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec"
     title="1학년 6반 건의 서비스"
     allow="clipboard-write; clipboard-read"
     loading="eager"></iframe>
-
   <script>
     var boot = document.getElementById('boot');
     var done = false;
-
     function hideBoot(){
       if(done) return;
       done = true;
       boot.classList.add('hide');
       setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
-
     document.getElementById('site').addEventListener('load', hideBoot);
-
+    /* 안전장치: load 이벤트가 안 와도 12초 뒤에는 반드시 걷어낸다 */
     setTimeout(hideBoot, 12000);
   </script>
 </body>

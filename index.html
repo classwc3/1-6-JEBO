@@ -27,9 +27,6 @@
   <style>
     html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#EFF6FF; }
 
-    /* ★ 로딩 화면은 숨길 때 반드시 '클릭을 통과'시켜야 한다.
-       opacity:0 만 주면 보이지 않을 뿐 화면 전체를 덮은 채로 남아
-       클릭과 스크롤을 전부 이 판이 먹어버린다. */
     #boot{ position:fixed; inset:0; z-index:3; display:flex; flex-direction:column;
       gap:20px; align-items:center; justify-content:center; background:#EFF6FF;
       transition:opacity .35s ease, visibility .35s;
@@ -74,14 +71,12 @@
     function hideBoot(){
       if(done) return;
       done = true;
-      boot.classList.add('hide');      /* 클릭이 통과되도록 숨긴다 */
+      boot.classList.add('hide');
       setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
 
     document.getElementById('site').addEventListener('load', hideBoot);
 
-    /* 안전장치: load 이벤트가 안 와도 12초 뒤에는 반드시 걷어낸다.
-       걷어내지 않으면 화면이 통째로 먹통이 된다. */
     setTimeout(hideBoot, 12000);
   </script>
 </body>

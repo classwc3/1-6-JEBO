@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://script.googleusercontent.com">
-  <!-- SEO / 공유 미리보기 -->
+  
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://1-6.웹.한국/">
   <meta property="og:title" content="1학년 6반 건의 서비스">
@@ -27,8 +27,6 @@
     #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
       align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
       transition:opacity .4s, visibility .4s; font-family:system-ui,-apple-system,sans-serif; }
-    /* ★ 숨길 때 클릭이 통과되어야 한다. opacity:0 만 주면 투명한 판이
-       화면 전체를 덮은 채 남아 클릭·스크롤을 전부 먹는다. */
     #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
     #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
       border-radius:50%; animation:s .8s linear infinite; }
@@ -56,7 +54,6 @@
       setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
     document.getElementById('site').addEventListener('load', hideBoot);
-    /* 안전장치: load 이벤트가 안 와도 12초 뒤에는 반드시 걷어낸다 */
     setTimeout(hideBoot, 12000);
   </script>
 </body>

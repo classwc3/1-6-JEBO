@@ -32,23 +32,9 @@
       border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
     iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
-    #secure-cover {
-      position: fixed;
-      inset: 0;
-      background: #000000;
-      z-index: 9999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-family: system-ui, -apple-system, sans-serif;
-      font-size: 16px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
-  <div id="secure-cover">보안 정책에 따라 화면을 표시할 수 없습니다.</div>
   <div id="boot">
     <div class="sp"></div>
   </div>
@@ -67,17 +53,7 @@
       boot.classList.add('hide');
       setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
-    document.getElementById('site').addEventListener('load', hideBoot);
-    setTimeout(hideBoot, 12000);
-    var cover = document.getElementById('secure-cover');
-    window.addEventListener('blur', function() {
-      cover.style.display = 'flex';
-    });
-    window.addEventListener('focus', function() {
-      setTimeout(function() {
-        cover.style.display = 'none';
-      }, 50);
-    });
+
   </script>
 </body>
 </html>

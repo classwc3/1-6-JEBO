@@ -7,60 +7,57 @@
   <meta name="description" content="1학년 6반 건의 서비스입니다.">
   <link rel="canonical" href="https://1-6.웹.한국/">
   <link rel="manifest" href="/manifest.json">
-  <link rel="preconnect" href="https://google.com" crossorigin>
-  <link rel="preconnect" href="https://googleusercontent.com" crossorigin>
-  <link rel="dns-prefetch" href="https://googleusercontent.com">
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.googleusercontent.com">
   
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://1-6.웹.한국/">
   <meta property="og:title" content="1학년 6반 건의 서비스">
   <meta property="og:description" content="1학년 6반 건의 서비스입니다.">
-  <meta property="og:image" content="https://imgur.com">
+  <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#2563EB">
-  <link rel="icon" href="https://imgur.com">
-  <link rel="apple-touch-icon" href="https://imgur.com">
+  <link rel="icon" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="apple-touch-icon" href="https://i.imgur.com/Ooev1wG.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
     html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#EFF6FF; }
     #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
-      align-items:center; justify-content:center; background:#EFF6FF; z-index:4; /* z-index를 높임 */
+      align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
       transition:opacity .4s, visibility .4s; font-family:system-ui,-apple-system,sans-serif; }
     #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
     #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
       border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
-    
     iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
-
-    /* 무한 반복되는 워터마크 스타일 */
-    .watermark-layer {
+    #secure-cover {
       position: fixed;
       inset: 0;
-      z-index: 3; /* iframe(2)보다는 위, 부팅화면(4)보다는 아래 */
-      pointer-events: none; /* 중요: 이걸 넣어야 워터마크 밑의 버튼들이 정상 클릭됨 */
-      opacity: 0.06; /* 글자 투명도 (선명하게 하려면 0.1 등으로 올리세요) */
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='150' height='150' viewBox='0 0 150 150'%3E%3Ctext x='50%25' y='50%25' font-size='12' font-weight='bold' fill='%23000' text-anchor='middle' transform='rotate(-25 75 75)'%3E1-6 건의서비스%3C/text%3E%3C/svg%3E");
-      background-repeat: repeat;
+      background: #000000;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <!-- 워터마크 레이어 추가 -->
-  <div class="watermark-layer"></div>
-
+  <div id="secure-cover">보안 정책에 따라 화면을 표시할 수 없습니다.</div>
   <div id="boot">
     <div class="sp"></div>
   </div>
-  
   <iframe
     id="site"
-    src="https://google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec"
+    src="https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec"
     title="1학년 6반 건의 서비스"
     allow="clipboard-write; clipboard-read"
     loading="eager"></iframe>
-    
   <script>
     var boot = document.getElementById('boot');
     var done = false;
@@ -72,8 +69,15 @@
     }
     document.getElementById('site').addEventListener('load', hideBoot);
     setTimeout(hideBoot, 12000);
-    
-    // 버버벅거리게 하던 blur, focus 감지 자바스크립트는 완전히 제거했습니다!
+    var cover = document.getElementById('secure-cover');
+    window.addEventListener('blur', function() {
+      cover.style.display = 'flex';
+    });
+    window.addEventListener('focus', function() {
+      setTimeout(function() {
+        cover.style.display = 'none';
+      }, 50);
+    });
   </script>
 </body>
 </html>

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://script.googleusercontent.com">
-  
+
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://1-6.웹.한국/">
   <meta property="og:title" content="1학년 6반 건의 서비스">
@@ -45,6 +45,16 @@
       font-size: 16px;
       font-weight: bold;
     }
+    #inapp{ position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center;
+      justify-content:center; gap:14px; padding:28px; text-align:center; background:#EFF6FF;
+      font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; color:#0f1729; }
+    #inapp .ic{ font-size:44px; }
+    #inapp h2{ margin:0; font-size:19px; }
+    #inapp p{ margin:0; font-size:14px; line-height:1.7; color:#64748b; }
+    #inapp button{ border:0; border-radius:14px; padding:14px 22px; font-size:15px; font-weight:800;
+      cursor:pointer; min-width:240px; font-family:inherit; }
+    #inapp .go{ background:#2563EB; color:#fff; }
+    #inapp .stay{ background:transparent; color:#94a3b8; font-weight:700; font-size:13px; }
   </style>
 </head>
 <body>
@@ -52,23 +62,102 @@
   <div id="boot">
     <div class="sp"></div>
   </div>
+  <div id="inapp">
+    <div class="ic">🧭</div>
+    <h2>다른 브라우저에서 열어주세요</h2>
+    <p id="inappMsg">이 앱 안의 브라우저에서는 일부 기능이 제대로 동작하지 않아요.<br>크롬이나 사파리에서 열면 훨씬 빠르고 안정적이에요.</p>
+    <button class="go" id="inappGo">외부 브라우저로 열기</button>
+    <button class="stay" id="inappStay">그냥 여기서 볼게요</button>
+  </div>
   <iframe
     id="site"
-    src="https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec"
     title="1학년 6반 건의 서비스"
     allow="clipboard-write; clipboard-read"
     loading="eager"></iframe>
   <script>
+    var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
     var boot = document.getElementById('boot');
+    var frame = document.getElementById('site');
     var done = false;
+
+    function deviceId(){
+      var K = 'c16_dev', v = '';
+      try { v = localStorage.getItem(K) || ''; } catch (e) {}
+      if (!v) { var m = document.cookie.match(/(?:^|;\s*)c16_dev=([A-Za-z0-9_-]+)/); if (m) v = m[1]; }
+      if (!/^[A-Za-z0-9_-]{6,64}$/.test(v)) {
+        var r = (window.crypto && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, '')
+              : (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+        v = 'd' + r.slice(0, 23);
+      }
+      try { localStorage.setItem(K, v); } catch (e) {}
+      try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e) {}
+      return v;
+    }
+
     function hideBoot(){
-      if(done) return;
+      if (done) return;
       done = true;
       boot.classList.add('hide');
-      setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
+      setTimeout(function(){ if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
-    document.getElementById('site').addEventListener('load', hideBoot);
-    setTimeout(hideBoot, 12000);
+
+    function start(){
+      frame.addEventListener('load', hideBoot);
+      frame.src = APP + '?d=' + encodeURIComponent(deviceId());
+      setTimeout(hideBoot, 12000);
+    }
+
+    var ua = navigator.userAgent || '';
+    var isKakao = /KAKAOTALK/i.test(ua);
+    var isInApp = isKakao || /Instagram|FBAN|FBAV|NAVER\(inapp|Line\/|everytimeApp|DaumApps/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+
+    function openExternal(){
+      var url = location.href;
+      if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return; }
+      if (/Line\//i.test(ua)) { location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'openExternalBrowser=1'; return; }
+      if (isAndroid) {
+        location.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        return;
+      }
+      document.getElementById('inappMsg').innerHTML = '오른쪽 위 <b>⋯</b> 또는 <b>공유</b> 버튼을 눌러<br><b>Safari로 열기</b>를 선택해주세요.';
+    }
+
+    var stayed = false;
+    try { stayed = sessionStorage.getItem('c16_stay') === '1'; } catch (e) {}
+
+    if (isInApp && !stayed) {
+      document.getElementById('inapp').style.display = 'flex';
+      boot.classList.add('hide');
+      document.getElementById('inappGo').onclick = openExternal;
+      document.getElementById('inappStay').onclick = function(){
+        try { sessionStorage.setItem('c16_stay', '1'); } catch (e) {}
+        document.getElementById('inapp').style.display = 'none';
+        boot.classList.remove('hide');
+        done = false;
+        start();
+      };
+      if (isKakao) setTimeout(openExternal, 300);
+    } else {
+      start();
+    }
+
+    var lastReload = 0;
+    window.addEventListener('message', function(e){
+      var host = '';
+      try { host = new URL(e.origin).hostname; } catch (x) {}
+      if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
+      var d = e.data || {};
+      if (d.c16 !== 'reload' || Date.now() - lastReload < 15000) return;
+      lastReload = Date.now();
+      frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (d.fresh ? '&fresh=1' : '') + '&_r=' + Date.now();
+    });
+
+    var cover = document.getElementById('secure-cover');
+    document.addEventListener('visibilitychange', function(){
+      cover.style.display = document.hidden ? 'flex' : 'none';
+    });
+    window.addEventListener('pageshow', function(){ cover.style.display = 'none'; });
   </script>
 </body>
 </html>

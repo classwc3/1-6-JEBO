@@ -120,11 +120,27 @@
       setTimeout(function(){ if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
 
+    var MY_IP = '';
+    try { MY_IP = sessionStorage.getItem('c16_ip') || ''; } catch (e) {}
+    function fetchIP(){
+      /* 부모(1차 도메인)에서 IP 를 받는다. 카카오톡·인앱이어도 여기선 대체로 된다. */
+      var tries = ['https://api.ipify.org?format=json', 'https://ipapi.co/json/'];
+      tries.forEach(function (u) {
+        try {
+          fetch(u, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+            var ip = j && (j.ip || j.query); if (!ip || MY_IP) return;
+            MY_IP = String(ip); try { sessionStorage.setItem('c16_ip', MY_IP); } catch (e) {}
+            try { frame.contentWindow.postMessage({ c16: 'ip', ip: MY_IP }, '*'); } catch (e2) {}
+          }).catch(function () {});
+        } catch (e) {}
+      });
+    }
     function start(){
       if (showSnap()) boot.classList.add('hide');
       else frame.addEventListener('load', hideBoot);
-      frame.src = APP + '?d=' + encodeURIComponent(deviceId());
+      frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '');
       setTimeout(hideBoot, 12000);
+      fetchIP();
     }
 
     var ua = navigator.userAgent || '';
@@ -168,7 +184,7 @@
       try { host = new URL(e.origin).hostname; } catch (x) {}
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
-      if (d.c16 === 'ready') { hideBoot(); return; }
+      if (d.c16 === 'ready') { hideBoot(); if (MY_IP) { try { frame.contentWindow.postMessage({ c16:'ip', ip: MY_IP }, '*'); } catch (e) {} } return; }
       if (d.c16 === 'snap' && d.v === 1) { saveSnap(d); return; }
       if (d.c16 !== 'reload' || Date.now() - lastReload < 15000) return;
       lastReload = Date.now();

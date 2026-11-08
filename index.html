@@ -31,14 +31,7 @@
     #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
       border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
-    iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; }
-    #site.wait{ opacity:0; }
-    #site{ transition:opacity .25s; }
-    #snap{ z-index:4; background:#f4f6fb; transition:opacity .3s; }
-    #snap.gone{ opacity:0; pointer-events:none; }
-    #snapBar{ position:fixed; top:0; left:0; right:0; height:3px; z-index:5; overflow:hidden; background:rgba(37,99,235,.15); }
-    #snapBar::after{ content:''; position:absolute; top:0; bottom:0; width:35%; background:#2563EB; animation:sb 1.1s ease-in-out infinite; }
-    @keyframes sb{ from{ left:-35%; } to{ left:100%; } }
+    iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; } to{ left:100%; } }
     #inapp{ position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center;
       justify-content:center; gap:14px; padding:28px; text-align:center; background:#EFF6FF;
       font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; color:#0f1729; }
@@ -71,32 +64,7 @@
     var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
     var boot = document.getElementById('boot');
     var frame = document.getElementById('site');
-    var done = false, snapShown = false;
-
-    function showSnap(){
-      try {
-        var raw = localStorage.getItem('c16_snap'); if (!raw) return false;
-        var o = JSON.parse(raw); if (!o || !o.doc || Date.now() - o.at > 7 * 86400000) return false;
-        var f = document.createElement('iframe'); f.id = 'snap'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
-        f.srcdoc = o.doc; document.body.appendChild(f);
-        var bar = document.createElement('div'); bar.id = 'snapBar'; document.body.appendChild(bar);
-        frame.classList.add('wait'); snapShown = true; return true;
-      } catch (e) { return false; }
-    }
-    function hideSnap(){
-      frame.classList.remove('wait');
-      var f = document.getElementById('snap'), bar = document.getElementById('snapBar');
-      if (bar) bar.remove();
-      if (f) { f.classList.add('gone'); setTimeout(function(){ if (f.parentNode) f.parentNode.removeChild(f); }, 350); }
-    }
-    function saveSnap(d){
-      try {
-        var doc = '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
-          + (d.font ? '<link rel="stylesheet" href="' + String(d.font).replace(/"/g, '') + '">' : '')
-          + '<style>' + String(d.css || '') + '</style><style>html,body{overflow:hidden}</style></head><body>' + String(d.html || '') + '</body></html>';
-        localStorage.setItem('c16_snap', JSON.stringify({ at: d.at || Date.now(), doc: doc }));
-      } catch (e) { try { localStorage.removeItem('c16_snap'); } catch (e2) {} }
-    }
+    var done = false;
 
     function deviceId(){
       var K = 'c16_dev', v = '';
@@ -115,7 +83,6 @@
     function hideBoot(){
       if (done) return;
       done = true;
-      hideSnap();
       boot.classList.add('hide');
       setTimeout(function(){ if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
     }
@@ -136,8 +103,7 @@
       });
     }
     function start(){
-      if (showSnap()) boot.classList.add('hide');
-      else frame.addEventListener('load', hideBoot);
+      frame.addEventListener('load', hideBoot);
       frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '');
       setTimeout(hideBoot, 12000);
       fetchIP();
@@ -185,7 +151,6 @@
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
       if (d.c16 === 'ready') { hideBoot(); if (MY_IP) { try { frame.contentWindow.postMessage({ c16:'ip', ip: MY_IP }, '*'); } catch (e) {} } return; }
-      if (d.c16 === 'snap' && d.v === 1) { saveSnap(d); return; }
       if (d.c16 !== 'reload' || Date.now() - lastReload < 15000) return;
       lastReload = Date.now();
       frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (d.fresh ? '&fresh=1' : '') + '&_r=' + Date.now();

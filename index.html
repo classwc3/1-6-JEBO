@@ -96,20 +96,34 @@
 
     var MY_IP = '';
     try { MY_IP = sessionStorage.getItem('c16_ip') || ''; } catch (e) {}
-    function fetchIP(){
-      /* 부모(1차 도메인)에서 IP 를 받는다. 카카오톡·인앱이어도 여기선 대체로 된다. */
-      var tries = ['https://api.ipify.org?format=json', 'https://ipapi.co/json/'];
-      tries.forEach(function (u) {
-        try {
-          fetch(u, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-            var ip = j && (j.ip || j.query); if (!ip || MY_IP) return;
-            MY_IP = String(ip); try { sessionStorage.setItem('c16_ip', MY_IP); } catch (e) {}
+    function fetchIP(retry){
+      /* 부모(1차 도메인)에서 IP 를 받는다. 막히는 곳이 있어 여러 곳에 차례로 묻는다. */
+      var srcs = [
+        ['https://api.ipify.org?format=json', 'json'], ['https://api64.ipify.org?format=json', 'json'],
+        ['https://ipapi.co/json/', 'json'], ['https://ipinfo.io/json', 'json'],
+        ['https://icanhazip.com/', 'text'], ['https://www.cloudflare.com/cdn-cgi/trace', 'trace']
+      ];
+      var k = 0;
+      function next(){
+        if (MY_IP) return;
+        if (k >= srcs.length) { if (!retry) setTimeout(function(){ fetchIP(true); }, 8000); return; }
+        var s = srcs[k++];
+        var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var tm = setTimeout(function(){ try { ctl && ctl.abort(); } catch (e) {} }, 3500);
+        fetch(s[0], { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) { return r.text(); }).then(function (t) {
+          clearTimeout(tm);
+          var ip = '';
+          if (s[1] === 'json') { try { var j = JSON.parse(t); ip = j.ip || j.query || ''; } catch (e) {} }
+          else if (s[1] === 'trace') { var m = t.match(/^ip=(.+)$/m); ip = m ? m[1].trim() : ''; }
+          else ip = String(t || '').trim();
+          if (/^[0-9a-fA-F:.]{3,45}$/.test(ip)) {
+            MY_IP = ip; try { sessionStorage.setItem('c16_ip', MY_IP); } catch (e) {}
             sendDev();
-          }).catch(function () {});
-        } catch (e) {}
-      });
+          } else next();
+        }).catch(function () { clearTimeout(tm); next(); });
+      }
+      next();
     }
-    try { localStorage.removeItem('c16_snap'); } catch (e) {}
     function sendDev(){
       try { frame.contentWindow.postMessage({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }, '*'); } catch (e) {}
     }

@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>1학년 6반 건의 서비스</title>
   <meta name="description" content="1학년 6반 건의 서비스입니다.">
@@ -32,6 +34,11 @@
       border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
     iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; } to{ left:100%; } }
+    #inappTip{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:20; display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:14px; background:#0f1729; color:#fff; font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.2); }
+    #inappTip span{ flex:1; line-height:1.4; }
+    #inappTip button{ border:0; border-radius:10px; padding:8px 11px; font-weight:800; font-size:13px; cursor:pointer; font-family:inherit; }
+    #inappTipGo{ background:#2563EB; color:#fff; }
+    #inappTipX{ background:transparent; color:#cbd5e1; }
     #inapp{ position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center;
       justify-content:center; gap:14px; padding:28px; text-align:center; background:#EFF6FF;
       font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; color:#0f1729; }
@@ -97,13 +104,17 @@
           fetch(u, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
             var ip = j && (j.ip || j.query); if (!ip || MY_IP) return;
             MY_IP = String(ip); try { sessionStorage.setItem('c16_ip', MY_IP); } catch (e) {}
-            try { frame.contentWindow.postMessage({ c16: 'ip', ip: MY_IP }, '*'); } catch (e2) {}
+            sendDev();
           }).catch(function () {});
         } catch (e) {}
       });
     }
+    try { localStorage.removeItem('c16_snap'); } catch (e) {}
+    function sendDev(){
+      try { frame.contentWindow.postMessage({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }, '*'); } catch (e) {}
+    }
     function start(){
-      frame.addEventListener('load', hideBoot);
+      frame.addEventListener('load', function(){ hideBoot(); sendDev(); });
       frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '');
       setTimeout(hideBoot, 12000);
       fetchIP();
@@ -128,20 +139,19 @@
     var stayed = false;
     try { stayed = sessionStorage.getItem('c16_stay') === '1'; } catch (e) {}
 
+    /* 카카오톡 등 앱 안 브라우저: 앱은 그대로 불러온다(기기·IP 기록). 안내는 화면을 막지 않는 위쪽 띠로. */
+    start();
     if (isInApp && !stayed) {
-      document.getElementById('inapp').style.display = 'flex';
-      boot.classList.add('hide');
-      document.getElementById('inappGo').onclick = openExternal;
-      document.getElementById('inappStay').onclick = function(){
+      var tip = document.createElement('div');
+      tip.id = 'inappTip';
+      tip.innerHTML = '<span>' + (isKakao ? '카카오톡' : '앱') + ' 안에서는 일부 기능이 제한될 수 있어요</span>'
+        + '<button id="inappTipGo">브라우저로 열기</button><button id="inappTipX" aria-label="닫기">✕</button>';
+      document.body.appendChild(tip);
+      document.getElementById('inappTipGo').onclick = openExternal;
+      document.getElementById('inappTipX').onclick = function(){
         try { sessionStorage.setItem('c16_stay', '1'); } catch (e) {}
-        document.getElementById('inapp').style.display = 'none';
-        boot.classList.remove('hide');
-        done = false;
-        start();
+        tip.remove();
       };
-      if (isKakao) setTimeout(openExternal, 300);
-    } else {
-      start();
     }
 
     var lastReload = 0;
@@ -150,7 +160,7 @@
       try { host = new URL(e.origin).hostname; } catch (x) {}
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
-      if (d.c16 === 'ready') { hideBoot(); if (MY_IP) { try { frame.contentWindow.postMessage({ c16:'ip', ip: MY_IP }, '*'); } catch (e) {} } return; }
+      if (d.c16 === 'ready') { hideBoot(); sendDev(); return; }
       if (d.c16 !== 'reload' || Date.now() - lastReload < 15000) return;
       lastReload = Date.now();
       frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (d.fresh ? '&fresh=1' : '') + '&_r=' + Date.now();

@@ -73,6 +73,12 @@
     var frame = document.getElementById('site');
     var done = false;
 
+    /* 기기ID 세 번째 보관소: IndexedDB (localStorage·쿠키가 지워져도 남아 있으면 되살린다) */
+    function idb(cb){ try { var rq = indexedDB.open('c16', 1); rq.onupgradeneeded = function(){ rq.result.createObjectStore('kv'); };
+      rq.onsuccess = function(){ cb(rq.result); }; rq.onerror = function(){}; } catch (e) {} }
+    function idbSave(v){ idb(function(db){ try { db.transaction('kv', 'readwrite').objectStore('kv').put(v, 'dev'); } catch (e) {} }); }
+    function idbLoad(cb){ var done = false; setTimeout(function(){ if (!done) { done = true; cb(''); } }, 400);
+      idb(function(db){ try { var g = db.transaction('kv').objectStore('kv').get('dev'); g.onsuccess = function(){ if (!done) { done = true; cb(String(g.result || '')); } }; } catch (e) { if (!done) { done = true; cb(''); } } }); }
     function deviceId(){
       var K = 'c16_dev', v = '';
       try { v = localStorage.getItem(K) || ''; } catch (e) {}
@@ -84,6 +90,7 @@
       }
       try { localStorage.setItem(K, v); } catch (e) {}
       try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e) {}
+      idbSave(v);
       return v;
     }
 
@@ -154,7 +161,15 @@
     try { stayed = sessionStorage.getItem('c16_stay') === '1'; } catch (e) {}
 
     /* 카카오톡 등 앱 안 브라우저: 앱은 그대로 불러온다(기기·IP 기록). 안내는 화면을 막지 않는 위쪽 띠로. */
-    start();
+    (function(){
+      var has = ''; try { has = localStorage.getItem('c16_dev') || ''; } catch (e) {}
+      if (!has && !/c16_dev=/.test(document.cookie)) {
+        idbLoad(function(v){
+          if (/^[A-Za-z0-9_-]{6,64}$/.test(v)) { try { localStorage.setItem('c16_dev', v); } catch (e) {} try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e2) {} }
+          start();
+        });
+      } else start();
+    })();
     if (isInApp && !stayed) {
       var tip = document.createElement('div');
       tip.id = 'inappTip';
@@ -175,7 +190,10 @@
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
       if (d.c16 === 'ready') { hideBoot(); sendDev(); return; }
-      if (d.c16 !== 'reload' || Date.now() - lastReload < 15000) return;
+      if (d.c16 !== 'reload') return;
+      /* 받았다고 먼저 답한다 → 앱이 바깥 창(이 페이지)을 다른 주소로 바꾸지 않는다 */
+      try { e.source && e.source.postMessage({ c16: 'reloading' }, '*'); } catch (x2) {}
+      if (Date.now() - lastReload < 15000) return;
       lastReload = Date.now();
       frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (d.fresh ? '&fresh=1' : '') + '&_r=' + Date.now();
     });

@@ -4,12 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#4361ee">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="1-6 건의">
+  <meta name="apple-mobile-web-app-title" content="1-6♥️">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>1학년 6반 건의 서비스</title>
   <meta name="description" content="1학년 6반 건의 서비스입니다.">
@@ -26,7 +22,7 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#2563EB">
-  <link rel="icon" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="icon" type="image/png" href="https://i.imgur.com/Ooev1wG.png">
   <link rel="apple-touch-icon" href="https://i.imgur.com/Ooev1wG.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -36,6 +32,7 @@
       align-items:center; justify-content:center; background:#EFF6FF; z-index:3;
       transition:opacity .4s, visibility .4s; font-family:system-ui,-apple-system,sans-serif; }
     #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+    #boot .bootIcon{ width:76px; height:76px; border-radius:20px; box-shadow:0 8px 24px rgba(37,99,235,.18); }
     #boot .sp{ width:40px; height:40px; border:3px solid #DBEAFE; border-top-color:#2563EB;
       border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
@@ -59,6 +56,7 @@
 </head>
 <body>
   <div id="boot">
+    <img class="bootIcon" src="https://i.imgur.com/Ooev1wG.png" alt="" onerror="this.remove()">
     <div class="sp"></div>
   </div>
   <div id="inapp">

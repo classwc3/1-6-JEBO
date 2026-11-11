@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#4361ee">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="1-6 건의">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>1학년 6반 건의 서비스</title>
   <meta name="description" content="1학년 6반 건의 서비스입니다.">
@@ -131,8 +137,16 @@
       }
       next();
     }
+    /* ── 홈 화면에 추가(앱 설치): 설치 창은 이 바깥 페이지에서만 띄울 수 있다 ── */
+    var PWA = { can: false, deferred: null, installed: false };
+    function isStandalone(){ try { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; } catch (e) { return false; } }
+    function sendPwa(){ try { frame.contentWindow.postMessage({ c16: 'pwa', can: PWA.can, standalone: isStandalone(), installed: PWA.installed }, '*'); } catch (e) {} }
+    window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); PWA.deferred = e; PWA.can = true; sendPwa(); });
+    window.addEventListener('appinstalled', function(){ PWA.installed = true; PWA.can = false; PWA.deferred = null; sendPwa(); });
+    try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){}); } catch (e) {}
     function sendDev(){
       try { frame.contentWindow.postMessage({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }, '*'); } catch (e) {}
+      sendPwa();
     }
     function start(){
       frame.addEventListener('load', function(){ hideBoot(); sendDev(); });
@@ -190,6 +204,14 @@
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
       if (d.c16 === 'ready') { hideBoot(); sendDev(); return; }
+      if (d.c16 === 'pwaInstall') {
+        if (PWA.deferred) {
+          PWA.deferred.prompt();
+          PWA.deferred.userChoice.then(function(r){ if (r && r.outcome === 'accepted') PWA.installed = true; PWA.deferred = null; PWA.can = false; sendPwa(); }).catch(function(){});
+        } else sendPwa();
+        return;
+      }
+      if (d.c16 === 'openExternal') { try { openExternal(); } catch (x3) {} return; }
       if (d.c16 !== 'reload') return;
       /* 받았다고 먼저 답한다 → 앱이 바깥 창(이 페이지)을 다른 주소로 바꾸지 않는다 */
       try { e.source && e.source.postMessage({ c16: 'reloading' }, '*'); } catch (x2) {}

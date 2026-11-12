@@ -118,25 +118,27 @@
       next();
     }
     function post(msg){ try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }
-    function sendDev(){ post({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }); sendPwa(); }
+    function sendDev(){ post({ c16: 'dev', id: deviceId(), ip: MY_IP || '', load: LOAD }); sendPwa(); }
 
     /* ── 앱 불러오기: 구글 '껍데기' 가 뜬 것(load)이 아니라, 앱이 '준비됨' 을 보내야 로딩을 걷는다.
           안 오면 한 번은 새로 받아 다시 열고, 그래도 안 되면 안내와 버튼을 보여준다 (회색 화면 방지) ── */
-    var tries = 0, readyTm = 0, slowTm = 0;
+    var tries = 0, readyTm = 0, slowTm = 0, loadT0 = 0, LOAD = null;
     function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail', 'hide'); if (cls) boot.classList.add(cls); }
     function appUrl(fresh){ return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
     function loadApp(fresh, keepMsg){
       ready = false; clearTimeout(readyTm); clearTimeout(slowTm);
+      if (!loadT0) loadT0 = Date.now();
       if (!keepMsg) bootMsg('');
       frame.src = appUrl(fresh);
       slowTm = setTimeout(function(){ if (!ready) bootMsg('잠시만요, 불러오는 중이에요…', 'slow'); }, 6000);
       readyTm = setTimeout(function(){
         if (ready) return;
-        if (tries < 1) { tries++; loadApp(true, true); return; }       /* 한 번은 조용히 새로 받아 다시 */
+        if (tries < 1) { tries++; loadApp(false, true); return; }      /* 한 번은 조용히 다시 (강제 새로 만들기는 더 느려서 쓰지 않는다) */
         bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail');
       }, tries ? 25000 : 15000);
     }
     function onReady(d){
+      if (loadT0) { LOAD = { ms: Date.now() - loadT0, tries: tries }; loadT0 = 0; }
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
       if (d) applyIcon(d.icon, d.name);
@@ -151,7 +153,7 @@
       if (!ready) return;
       clearTimeout(aliveTm);
       post({ c16: 'alive?' });
-      aliveTm = setTimeout(function(){ tries = 1; bootMsg('다시 불러오는 중…', 'slow'); loadApp(true, true); }, 3500);
+      aliveTm = setTimeout(function(){ tries = 1; bootMsg('다시 불러오는 중…', 'slow'); loadApp(false, true); }, 3500);
     }
     document.addEventListener('visibilitychange', function(){
       if (document.hidden) { hiddenAt = Date.now(); return; }

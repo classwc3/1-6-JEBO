@@ -14,7 +14,6 @@
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://script.googleusercontent.com">
-
   <meta property="og:type" content="profile">
   <meta property="og:url" content="https://1-6.웹.한국/">
   <meta property="og:title" content="1학년 6반 건의 서비스">
@@ -22,207 +21,285 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#F4F6FB">
-  <link rel="icon" type="image/png" href="https://i.imgur.com/Ooev1wG.png">
-  <link rel="apple-touch-icon" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="icon" type="image/png" id="favIc" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="apple-touch-icon" id="appleIc" href="https://i.imgur.com/Ooev1wG.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
     html,body{ margin:0; padding:0; height:100%; overflow:hidden; background:#F4F6FB; }
-    #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
-      align-items:center; justify-content:center; background:#F4F6FB; z-index:3;
-      transition:opacity .4s, visibility .4s; font-family:system-ui,-apple-system,sans-serif; }
+    body{ font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; -webkit-text-size-adjust:100%; }
+    #boot{ position:fixed; inset:0; display:flex; flex-direction:column; gap:18px; align-items:center; justify-content:center;
+      background:#F4F6FB; z-index:5; transition:opacity .35s, visibility .35s; padding:24px; box-sizing:border-box; }
     #boot.hide{ opacity:0; visibility:hidden; pointer-events:none; }
-    #boot .sp{ width:40px; height:40px; border:3px solid #E3E8FD; border-top-color:#4361EE;
-      border-radius:50%; animation:s .8s linear infinite; }
+    #boot .sp{ width:40px; height:40px; border:3px solid #E3E8FD; border-top-color:#4361EE; border-radius:50%; animation:s .8s linear infinite; }
     @keyframes s{ to{ transform:rotate(360deg); } }
-    iframe{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#fff; } to{ left:100%; } }
-    #inappTip{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:20; display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:14px; background:#0f1729; color:#fff; font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.2); }
-    #inappTip span{ flex:1; line-height:1.4; }
-    #inappTip button{ border:0; border-radius:10px; padding:8px 11px; font-weight:800; font-size:13px; cursor:pointer; font-family:inherit; }
-    #inappTipGo{ background:#2563EB; color:#fff; }
-    #inappTipX{ background:transparent; color:#cbd5e1; }
-    #inapp{ position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center;
-      justify-content:center; gap:14px; padding:28px; text-align:center; background:#EFF6FF;
-      font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; color:#0f1729; }
-    #inapp .ic{ font-size:44px; }
-    #inapp h2{ margin:0; font-size:19px; }
-    #inapp p{ margin:0; font-size:14px; line-height:1.7; color:#64748b; }
-    #inapp button{ border:0; border-radius:14px; padding:14px 22px; font-size:15px; font-weight:800;
-      cursor:pointer; min-width:240px; font-family:inherit; }
-    #inapp .go{ background:#2563EB; color:#fff; }
-    #inapp .stay{ background:transparent; color:#94a3b8; font-weight:700; font-size:13px; }
+    #boot .msg{ display:none; max-width:300px; text-align:center; color:#334155; font-size:15px; line-height:1.6; }
+    #boot .msg b{ display:block; font-size:17px; color:#0f1729; margin-bottom:6px; }
+    #boot .btns{ display:none; flex-direction:column; gap:10px; width:240px; }
+    #boot .btns button,#boot .btns a{ font-family:inherit; font-size:15px; font-weight:700; border:0; border-radius:12px; padding:13px 0; text-align:center; text-decoration:none; cursor:pointer; }
+    #boot .btns .p{ background:#4361EE; color:#fff; }
+    #boot .btns .g{ background:#E3E8FD; color:#334155; }
+    #boot.slow .msg,#boot.fail .msg{ display:block; }
+    #boot.fail .sp{ display:none; }
+    #boot.fail .btns{ display:flex; }
+    iframe#site{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#F4F6FB; }
+    .sheet{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:20; display:flex; align-items:center; gap:10px;
+      padding:12px 14px; border-radius:16px; background:#0f1729; color:#fff; font-size:14px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    .sheet span{ flex:1; line-height:1.45; }
+    .sheet button{ border:0; border-radius:11px; padding:10px 13px; font-weight:800; font-size:14px; cursor:pointer; font-family:inherit; }
+    .sheet .go{ background:#4361EE; color:#fff; }
+    .sheet .x{ background:transparent; color:#cbd5e1; padding:10px 6px; }
   </style>
 </head>
 <body>
   <div id="boot">
     <div class="sp"></div>
+    <div class="msg" id="bootMsg"></div>
+    <div class="btns"><button class="p" id="bootRetry">다시 불러오기</button><a class="g" id="bootOpen" target="_top">바로 열기</a></div>
   </div>
-  <div id="inapp">
-    <div class="ic">🧭</div>
-    <h2>다른 브라우저에서 열어주세요</h2>
-    <p id="inappMsg">이 앱 안의 브라우저에서는 일부 기능이 제대로 동작하지 않아요.<br>크롬이나 사파리에서 열면 훨씬 빠르고 안정적이에요.</p>
-    <button class="go" id="inappGo">외부 브라우저로 열기</button>
-    <button class="stay" id="inappStay">그냥 여기서 볼게요</button>
-  </div>
-  <iframe
-    id="site"
-    title="1학년 6반 건의 서비스"
-    allow="clipboard-write; clipboard-read"
-    loading="eager"></iframe>
+  <iframe id="site" title="1학년 6반 건의 서비스" allow="clipboard-write; clipboard-read" loading="eager"></iframe>
   <script>
+  (function(){
     var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
-    var boot = document.getElementById('boot');
-    var frame = document.getElementById('site');
-    var done = false;
+    var boot = document.getElementById('boot'), frame = document.getElementById('site');
+    var ready = false;
+    function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
+    function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k) || ''; sessionStorage.setItem(k, v); } catch (e) { return ''; } }
 
-    /* 기기ID 세 번째 보관소: IndexedDB (localStorage·쿠키가 지워져도 남아 있으면 되살린다) */
-    function idb(cb){ try { var rq = indexedDB.open('c16', 1); rq.onupgradeneeded = function(){ rq.result.createObjectStore('kv'); };
-      rq.onsuccess = function(){ cb(rq.result); }; rq.onerror = function(){}; } catch (e) {} }
+    /* ── 시트에서 바꾼 로고·앱 이름을 탭 아이콘·제목에 바로 반영 (다음 접속엔 처음부터) ── */
+    function applyIcon(url, name){
+      if (url && /^https:\/\//.test(url)) {
+        ['favIc', 'appleIc'].forEach(function(id){ var l = document.getElementById(id); if (l && l.href !== url) l.href = url; });
+        ls('c16_icon', url);
+      }
+      if (name) { document.title = name; ls('c16_name', name); }
+    }
+    applyIcon(ls('c16_icon'), ls('c16_name'));
+
+    /* ── 기기 ID: localStorage · 쿠키 · IndexedDB 세 곳에 보관 ── */
+    function idb(cb){ try { var rq = indexedDB.open('c16', 1); rq.onupgradeneeded = function(){ rq.result.createObjectStore('kv'); }; rq.onsuccess = function(){ cb(rq.result); }; rq.onerror = function(){}; } catch (e) {} }
     function idbSave(v){ idb(function(db){ try { db.transaction('kv', 'readwrite').objectStore('kv').put(v, 'dev'); } catch (e) {} }); }
-    function idbLoad(cb){ var done = false; setTimeout(function(){ if (!done) { done = true; cb(''); } }, 400);
-      idb(function(db){ try { var g = db.transaction('kv').objectStore('kv').get('dev'); g.onsuccess = function(){ if (!done) { done = true; cb(String(g.result || '')); } }; } catch (e) { if (!done) { done = true; cb(''); } } }); }
+    function idbLoad(cb){ var fin = false; setTimeout(function(){ if (!fin) { fin = true; cb(''); } }, 400);
+      idb(function(db){ try { var g = db.transaction('kv').objectStore('kv').get('dev'); g.onsuccess = function(){ if (!fin) { fin = true; cb(String(g.result || '')); } }; } catch (e) { if (!fin) { fin = true; cb(''); } } }); }
+    function keepId(v){ ls('c16_dev', v); try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e) {} idbSave(v); }
+    var DEV = '';
     function deviceId(){
-      var K = 'c16_dev', v = '';
-      try { v = localStorage.getItem(K) || ''; } catch (e) {}
+      if (DEV) return DEV;
+      var v = ls('c16_dev');
       if (!v) { var m = document.cookie.match(/(?:^|;\s*)c16_dev=([A-Za-z0-9_-]+)/); if (m) v = m[1]; }
       if (!/^[A-Za-z0-9_-]{6,64}$/.test(v)) {
-        var r = (window.crypto && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, '')
-              : (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+        var r = (window.crypto && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, '') : (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
         v = 'd' + r.slice(0, 23);
       }
-      try { localStorage.setItem(K, v); } catch (e) {}
-      try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e) {}
-      idbSave(v);
+      keepId(v); DEV = v;
       return v;
     }
 
-    function hideBoot(){
-      if (done) return;
-      done = true;
-      boot.classList.add('hide');
-      setTimeout(function(){ if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 400);
-    }
-
-    var MY_IP = '';
-    try { MY_IP = sessionStorage.getItem('c16_ip') || ''; } catch (e) {}
+    /* ── IP: 막히는 곳이 있어 여러 곳에 차례로 묻는다 ── */
+    var MY_IP = ss('c16_ip');
     function fetchIP(retry){
-      /* 부모(1차 도메인)에서 IP 를 받는다. 막히는 곳이 있어 여러 곳에 차례로 묻는다. */
-      var srcs = [
-        ['https://api.ipify.org?format=json', 'json'], ['https://api64.ipify.org?format=json', 'json'],
-        ['https://ipapi.co/json/', 'json'], ['https://ipinfo.io/json', 'json'],
-        ['https://icanhazip.com/', 'text'], ['https://www.cloudflare.com/cdn-cgi/trace', 'trace']
-      ];
+      var srcs = [['https://api.ipify.org?format=json', 'json'], ['https://api64.ipify.org?format=json', 'json'], ['https://ipapi.co/json/', 'json'],
+                  ['https://ipinfo.io/json', 'json'], ['https://icanhazip.com/', 'text'], ['https://www.cloudflare.com/cdn-cgi/trace', 'trace']];
       var k = 0;
       function next(){
         if (MY_IP) return;
         if (k >= srcs.length) { if (!retry) setTimeout(function(){ fetchIP(true); }, 8000); return; }
-        var s = srcs[k++];
-        var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var s = srcs[k++], ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
         var tm = setTimeout(function(){ try { ctl && ctl.abort(); } catch (e) {} }, 3500);
-        fetch(s[0], { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) { return r.text(); }).then(function (t) {
+        fetch(s[0], { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function(r){ return r.text(); }).then(function(t){
           clearTimeout(tm);
           var ip = '';
           if (s[1] === 'json') { try { var j = JSON.parse(t); ip = j.ip || j.query || ''; } catch (e) {} }
           else if (s[1] === 'trace') { var m = t.match(/^ip=(.+)$/m); ip = m ? m[1].trim() : ''; }
           else ip = String(t || '').trim();
-          if (/^[0-9a-fA-F:.]{3,45}$/.test(ip)) {
-            MY_IP = ip; try { sessionStorage.setItem('c16_ip', MY_IP); } catch (e) {}
-            sendDev();
-          } else next();
-        }).catch(function () { clearTimeout(tm); next(); });
+          if (/^[0-9a-fA-F:.]{3,45}$/.test(ip)) { MY_IP = ip; ss('c16_ip', ip); sendDev(); } else next();
+        }).catch(function(){ clearTimeout(tm); next(); });
       }
       next();
     }
-    /* ── 홈 화면에 추가(앱 설치): 설치 창은 이 바깥 페이지에서만 띄울 수 있다 ── */
+    function post(msg){ try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }
+    function sendDev(){ post({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }); sendPwa(); }
+
+    /* ── 앱 불러오기: 구글 '껍데기' 가 뜬 것(load)이 아니라, 앱이 '준비됨' 을 보내야 로딩을 걷는다.
+          안 오면 한 번은 새로 받아 다시 열고, 그래도 안 되면 안내와 버튼을 보여준다 (회색 화면 방지) ── */
+    var tries = 0, readyTm = 0, slowTm = 0;
+    function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail', 'hide'); if (cls) boot.classList.add(cls); }
+    function appUrl(fresh){ return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
+    function loadApp(fresh, keepMsg){
+      ready = false; clearTimeout(readyTm); clearTimeout(slowTm);
+      if (!keepMsg) bootMsg('');
+      frame.src = appUrl(fresh);
+      slowTm = setTimeout(function(){ if (!ready) bootMsg('잠시만요, 불러오는 중이에요…', 'slow'); }, 6000);
+      readyTm = setTimeout(function(){
+        if (ready) return;
+        if (tries < 1) { tries++; loadApp(true, true); return; }       /* 한 번은 조용히 새로 받아 다시 */
+        bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail');
+      }, tries ? 25000 : 15000);
+    }
+    function onReady(d){
+      ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
+      boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
+      if (d) applyIcon(d.icon, d.name);
+      sendDev();
+    }
+    document.getElementById('bootRetry').onclick = function(){ tries = 1; loadApp(true); };
+    document.getElementById('bootOpen').onclick = function(){ this.href = APP + '?d=' + encodeURIComponent(deviceId()) + '&direct=1'; };
+
+    /* ── 다시 돌아왔을 때 앱이 살아 있는지 확인 (휴대폰이 뒤에 있던 화면을 지워버리면 회색만 남는다) ── */
+    var hiddenAt = 0, aliveTm = 0;
+    function checkAlive(){
+      if (!ready) return;
+      clearTimeout(aliveTm);
+      post({ c16: 'alive?' });
+      aliveTm = setTimeout(function(){ tries = 1; bootMsg('다시 불러오는 중…', 'slow'); loadApp(true, true); }, 3500);
+    }
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      if (hiddenAt && Date.now() - hiddenAt > 15000) checkAlive();
+    });
+    window.addEventListener('pageshow', function(e){ if (e.persisted) checkAlive(); });
+
+    /* ── 홈 화면에 추가(설치) ── */
     var PWA = { can: false, deferred: null, installed: false };
     function isStandalone(){ try { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; } catch (e) { return false; } }
-    function sendPwa(){ try { frame.contentWindow.postMessage({ c16: 'pwa', can: PWA.can, standalone: isStandalone(), installed: PWA.installed }, '*'); } catch (e) {} }
+    function badgeState(){
+      var perm = (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+      return { api: 'setAppBadge' in navigator, perm: perm, standalone: isStandalone() };
+    }
+    function sendPwa(){ post({ c16: 'pwa', can: PWA.can, standalone: isStandalone(), installed: PWA.installed, badge: badgeState() }); }
     window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); PWA.deferred = e; PWA.can = true; sendPwa(); });
     window.addEventListener('appinstalled', function(){ PWA.installed = true; PWA.can = false; PWA.deferred = null; sendPwa(); });
-    try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){}); } catch (e) {}
-    function sendDev(){
-      try { frame.contentWindow.postMessage({ c16: 'dev', id: deviceId(), ip: MY_IP || '' }, '*'); } catch (e) {}
-      sendPwa();
+    var SW = null;
+    try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(function(r){ SW = r; }).catch(function(){}); } catch (e) {}
+    /* 브라우저가 '바깥 페이지에서 누른 것' 만 인정하는 경우 → 바깥 페이지 버튼으로 한 번 더 누르게 */
+    function showSheet(text, label, fn){
+      var old = document.getElementById('c16Sheet'); if (old) old.remove();
+      var d = document.createElement('div'); d.className = 'sheet'; d.id = 'c16Sheet';
+      d.innerHTML = '<span></span><button class="go"></button><button class="x" aria-label="닫기">✕</button>';
+      d.children[0].textContent = text; d.children[1].textContent = label;
+      d.children[1].onclick = function(){ d.remove(); fn(); };
+      d.children[2].onclick = function(){ d.remove(); };
+      document.body.appendChild(d);
+      setTimeout(function(){ if (d.parentNode) d.remove(); }, 15000);
     }
-    function start(){
-      frame.addEventListener('load', function(){ hideBoot(); sendDev(); });
-      frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '');
-      setTimeout(hideBoot, 12000);
-      fetchIP();
+    function doPrompt(){
+      var ev = PWA.deferred; if (!ev) { sendPwa(); return; }
+      try {
+        var p = ev.prompt();
+        PWA.deferred = null;
+        if (p && p.catch) p.catch(function(){ PWA.deferred = ev; showSheet('설치 창을 열려면 한 번 더 눌러주세요', '📲 설치', doPrompt); });
+        ev.userChoice.then(function(r){ if (r && r.outcome === 'accepted') PWA.installed = true; PWA.can = false; sendPwa(); }).catch(function(){});
+      } catch (e) { PWA.deferred = ev; showSheet('설치 창을 열려면 한 번 더 눌러주세요', '📲 설치', doPrompt); }
     }
 
+    /* ── 앱 아이콘 숫자 배지 ──
+       · 아이폰(홈 화면 앱) · PC: 숫자 배지 기능 사용. 아이폰은 '알림 허용' 이 있어야 숫자가 붙는다 → 허용 요청은 이 바깥 페이지에서
+       · 안드로이드 크롬: 숫자 배지 기능이 없고, 알림이 있어야 아이콘에 점·숫자가 붙는다 → 조용한 알림 한 개로 */
+    function applyBadge(n){
+      n = Math.max(0, Math.min(99, Number(n) || 0));
+      ls('c16_badge', String(n));
+      var done = false;
+      try {
+        if ('setAppBadge' in navigator) {
+          var pr = (n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge());
+          if (pr && pr.catch) pr.catch(function(){});
+          done = true;
+        }
+      } catch (e) {}
+      try {
+        if (!done && isStandalone() && typeof Notification !== 'undefined' && Notification.permission === 'granted' && SW && SW.showNotification) {
+          SW.getNotifications({ tag: 'c16-badge' }).then(function(ns){ ns.forEach(function(x){ x.close(); }); }).catch(function(){});
+          if (n > 0) SW.showNotification('1-6 오늘 챙길 것 ' + n + '개', { tag: 'c16-badge', body: '준비물 · 수행평가 · 시험 · 시간표 변동', silent: true, icon: ls('c16_icon') || undefined, data: { n: n } });
+        }
+      } catch (e2) {}
+    }
+    function askBadge(){
+      if (typeof Notification === 'undefined') { post({ c16: 'badgePerm', state: 'unsupported' }); return; }
+      var answered = false;
+      function back(s){ if (answered) return; answered = true; post({ c16: 'badgePerm', state: s }); applyBadge(ls('c16_badge')); sendPwa(); }
+      try {
+        var p = Notification.requestPermission(back);
+        if (p && p.then) p.then(back).catch(function(){ showSheet('아이콘 숫자를 켜려면 한 번 더 눌러주세요', '🔔 켜기', askBadge); });
+      } catch (e) { showSheet('아이콘 숫자를 켜려면 한 번 더 눌러주세요', '🔔 켜기', askBadge); }
+    }
+    if (isStandalone() && ls('c16_badge')) setTimeout(function(){ applyBadge(ls('c16_badge')); }, 800);
+
+    /* ── 카카오톡 등 앱 안 브라우저 → 외부 브라우저로 (삼성 인터넷 → 크롬 → 사파리 → 엣지) ── */
     var ua = navigator.userAgent || '';
     var isKakao = /KAKAOTALK/i.test(ua);
-    var isInApp = isKakao || /Instagram|FBAN|FBAV|NAVER\(inapp|Line\/|everytimeApp|DaumApps/i.test(ua);
-    var isAndroid = /Android/i.test(ua);
-
-    function openExternal(){
-      var url = location.href;
-      if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); return; }
-      if (/Line\//i.test(ua)) { location.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'openExternalBrowser=1'; return; }
+    var isInApp = isKakao || /Instagram|FBAN|FBAV|NAVER\(inapp|Line\/|everytimeApp|DaumApps|BAND\//i.test(ua);
+    var isAndroid = /Android/i.test(ua), isIOS = /iPhone|iPad|iPod/i.test(ua);
+    function selfUrl(step){ return location.origin + location.pathname + (step ? '?ext=' + step : ''); }
+    function intentFor(pkg, fallbackStep){
+      return 'intent://' + location.host + location.pathname + '#Intent;scheme=https;package=' + pkg
+        + ';S.browser_fallback_url=' + encodeURIComponent(selfUrl(fallbackStep)) + ';end';
+    }
+    function openExternal(step){
+      step = step || 1;
+      ss('c16_ext', String(step));
       if (isAndroid) {
-        location.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        if (step === 1) { location.href = intentFor('com.sec.android.app.sbrowser', 2); return; }   /* 삼성 인터넷 (없으면 ?ext=2 로 돌아온다) */
+        if (step === 2) { location.href = intentFor('com.android.chrome', 3); return; }            /* 크롬 */
+        if (step === 3) { location.href = intentFor('com.microsoft.emmx', 4); return; }            /* 엣지 */
+        if (isKakao) location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(selfUrl());
         return;
       }
-      document.getElementById('inappMsg').innerHTML = '오른쪽 위 <b>⋯</b> 또는 <b>공유</b> 버튼을 눌러<br><b>Safari로 열기</b>를 선택해주세요.';
+      if (isIOS) {   /* 아이폰엔 삼성 인터넷이 없다 → 크롬 → 사파리 → 엣지 */
+        if (step === 1) {
+          var left = false, h = function(){ if (document.hidden) left = true; };
+          document.addEventListener('visibilitychange', h);
+          location.href = 'googlechromes://' + location.host + location.pathname;
+          setTimeout(function(){ document.removeEventListener('visibilitychange', h); if (!left) openExternal(2); }, 1600);
+          return;
+        }
+        if (step === 2) {
+          if (isKakao) { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(selfUrl()); return; }
+          if (/Line\//i.test(ua)) { location.href = selfUrl() + '?openExternalBrowser=1'; return; }
+          location.href = 'x-safari-https://' + location.host + location.pathname; return;
+        }
+        if (step === 3) { location.href = 'microsoft-edge-https://' + location.host + location.pathname; return; }
+        return;
+      }
+      if (/Line\//i.test(ua)) location.href = selfUrl() + '?openExternalBrowser=1';
+    }
+    if (isInApp) {
+      var stepQ = Number((location.search.match(/[?&]ext=(\d)/) || [])[1] || 0);
+      if (stepQ >= 2 && stepQ <= 3) setTimeout(function(){ openExternal(stepQ); }, 50);     /* 앞 순서 브라우저가 없어 돌아온 경우 → 다음 순서 */
+      else if (!ss('c16_ext') && !stepQ) setTimeout(function(){ openExternal(1); }, 300);   /* 처음 한 번은 자동으로 */
+      setTimeout(function(){
+        showSheet((isKakao ? '카카오톡' : '앱') + ' 안에서는 일부 기능이 제한돼요. 브라우저로 열면 더 빠르고 안정적이에요', '브라우저로', function(){ openExternal(1); });
+      }, 2500);
     }
 
-    var stayed = false;
-    try { stayed = sessionStorage.getItem('c16_stay') === '1'; } catch (e) {}
-
-    /* 카카오톡 등 앱 안 브라우저: 앱은 그대로 불러온다(기기·IP 기록). 안내는 화면을 막지 않는 위쪽 띠로. */
-    (function(){
-      var has = ''; try { has = localStorage.getItem('c16_dev') || ''; } catch (e) {}
-      if (!has && !/c16_dev=/.test(document.cookie)) {
-        idbLoad(function(v){
-          if (/^[A-Za-z0-9_-]{6,64}$/.test(v)) { try { localStorage.setItem('c16_dev', v); } catch (e) {} try { document.cookie = 'c16_dev=' + v + ';path=/;max-age=63072000;SameSite=Lax;Secure'; } catch (e2) {} }
-          start();
-        });
-      } else start();
-    })();
-    if (isInApp && !stayed) {
-      var tip = document.createElement('div');
-      tip.id = 'inappTip';
-      tip.innerHTML = '<span>' + (isKakao ? '카카오톡' : '앱') + ' 안에서는 일부 기능이 제한될 수 있어요</span>'
-        + '<button id="inappTipGo">브라우저로 열기</button><button id="inappTipX" aria-label="닫기">✕</button>';
-      document.body.appendChild(tip);
-      document.getElementById('inappTipGo').onclick = openExternal;
-      document.getElementById('inappTipX').onclick = function(){
-        try { sessionStorage.setItem('c16_stay', '1'); } catch (e) {}
-        tip.remove();
-      };
-    }
-
-    var lastReload = 0;
+    /* ── 앱(iframe)에서 오는 신호 ── */
     window.addEventListener('message', function(e){
-      var host = '';
-      try { host = new URL(e.origin).hostname; } catch (x) {}
+      var host = ''; try { host = new URL(e.origin).hostname; } catch (x) {}
       if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
       var d = e.data || {};
-      if (d.c16 === 'ready') { hideBoot(); sendDev(); return; }
-      if (d.c16 === 'badge') {
-        try {
-          var n = Math.max(0, Math.min(99, Number(d.n) || 0));
-          if ('setAppBadge' in navigator) { if (n > 0) navigator.setAppBadge(n); else navigator.clearAppBadge(); }
-        } catch (x4) {}
-        return;
+      switch (d.c16) {
+        case 'ready': onReady(d); return;
+        case 'alive': clearTimeout(aliveTm); return;
+        case 'badge': applyBadge(d.n); return;
+        case 'badgePerm': askBadge(); return;
+        case 'pwaInstall': doPrompt(); return;
+        case 'pwaState': sendPwa(); return;
+        case 'openExternal': openExternal(1); return;
+        case 'devSet': if (/^[A-Za-z0-9_-]{6,64}$/.test(String(d.id || ''))) { DEV = String(d.id); keepId(DEV); } return;   /* 서버가 '같은 기기' 로 판단한 예전 ID */
+        case 'icon': applyIcon(d.icon, d.name); return;
+        case 'reload':
+          try { e.source && e.source.postMessage({ c16: 'reloading' }, '*'); } catch (x2) {}
+          if (Date.now() - (window.__lastReload || 0) < 15000) return;
+          window.__lastReload = Date.now();
+          tries = 1; bootMsg('새로 여는 중…', 'slow'); loadApp(true, true);
+          return;
       }
-      if (d.c16 === 'pwaInstall') {
-        if (PWA.deferred) {
-          PWA.deferred.prompt();
-          PWA.deferred.userChoice.then(function(r){ if (r && r.outcome === 'accepted') PWA.installed = true; PWA.deferred = null; PWA.can = false; sendPwa(); }).catch(function(){});
-        } else sendPwa();
-        return;
-      }
-      if (d.c16 === 'openExternal') { try { openExternal(); } catch (x3) {} return; }
-      if (d.c16 !== 'reload') return;
-      /* 받았다고 먼저 답한다 → 앱이 바깥 창(이 페이지)을 다른 주소로 바꾸지 않는다 */
-      try { e.source && e.source.postMessage({ c16: 'reloading' }, '*'); } catch (x2) {}
-      if (Date.now() - lastReload < 15000) return;
-      lastReload = Date.now();
-      frame.src = APP + '?d=' + encodeURIComponent(deviceId()) + (d.fresh ? '&fresh=1' : '') + '&_r=' + Date.now();
     });
 
+    /* ── 시작: 기기 ID 를 먼저 확보 (IndexedDB 에만 남아 있으면 되살린다) ── */
+    function start(){ frame.addEventListener('load', function(){ sendDev(); }); loadApp(false); fetchIP(); }
+    if (!ls('c16_dev') && !/c16_dev=/.test(document.cookie)) idbLoad(function(v){ if (/^[A-Za-z0-9_-]{6,64}$/.test(v)) keepId(v); start(); });
+    else start();
+  })();
   </script>
 </body>
 </html>

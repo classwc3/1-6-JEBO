@@ -21,8 +21,9 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#F4F6FB">
-  <link rel="icon" type="image/png" id="favIc" href="https://i.imgur.com/Ooev1wG.png">
-  <link rel="apple-touch-icon" id="appleIc" href="https://i.imgur.com/Ooev1wG.png">
+  <link rel="icon" type="image/png" id="favIc" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" id="appleIc" href="/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
@@ -43,6 +44,14 @@
     #boot.fail .sp{ display:none; }
     #boot.fail .btns{ display:flex; }
     iframe#site{ position:fixed; inset:0; width:100%; height:100%; border:0; z-index:2; background:#F4F6FB; }
+    /* 즉시 화면: 지난번 첫 화면 그림 — 진짜 앱이 준비되면 사라진다 */
+    #snap{ position:fixed; inset:0; z-index:4; background:#F4F6FB; transition:opacity .3s; }
+    #snap.off{ opacity:0; pointer-events:none; }
+    #snap iframe{ width:100%; height:100%; border:0; display:block; }
+    #snapBar{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 8px); z-index:6; background:rgba(15,23,41,.86); color:#fff;
+      font:600 12.5px/1 system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; padding:8px 12px; border-radius:999px; display:flex; align-items:center; gap:8px; white-space:nowrap; transition:opacity .3s; }
+    #snapBar i{ width:12px; height:12px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:s .8s linear infinite; }
+    #snapBar.off{ opacity:0; pointer-events:none; }
     .sheet{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:20; display:flex; align-items:center; gap:10px;
       padding:12px 14px; border-radius:16px; background:#0f1729; color:#fff; font-size:14px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
     .sheet span{ flex:1; line-height:1.45; }
@@ -62,6 +71,40 @@
   (function(){
     var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
     var boot = document.getElementById('boot'), frame = document.getElementById('site');
+    /* ── 즉시 화면: 앱이 맡겨 둔 지난번 첫 화면을 바로 보여준다 (구글 서버를 기다리지 않는다) ── */
+    var SNAP = null;
+    function snapShow(){
+      try {
+        var raw = localStorage.getItem('c16_snap'); if (!raw) return;
+        var o = JSON.parse(raw); if (!o || !o.html || !o.css) return;
+        var a0 = new Date(o.at), n0 = new Date();
+        if (a0.getFullYear() !== n0.getFullYear() || a0.getMonth() !== n0.getMonth() || a0.getDate() !== n0.getDate()) return;   /* 오늘 화면만 (어제 화면은 보여주지 않는다) */
+        var box = document.createElement('div'); box.id = 'snap';
+        var fr = document.createElement('iframe'); fr.setAttribute('sandbox', ''); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+        fr.srcdoc = '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+          + '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">'
+          + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>';
+        box.appendChild(fr);
+        var bar = document.createElement('div'); bar.id = 'snapBar';
+        bar.innerHTML = '<i></i><span>최신 정보 불러오는 중…</span>';
+        box.addEventListener('click', function(){ bar.querySelector('span').textContent = '잠깐만요, 거의 다 됐어요…'; });
+        document.body.appendChild(box); document.body.appendChild(bar);
+        SNAP = { box: box, bar: bar };
+        boot.classList.add('hide');                            /* 빈 로딩 화면 대신 지난번 화면 */
+      } catch (e) {}
+    }
+    function snapHide(){
+      if (!SNAP) return; var s0 = SNAP; SNAP = null;
+      s0.box.classList.add('off'); s0.bar.classList.add('off');
+      setTimeout(function(){ try { s0.box.remove(); s0.bar.remove(); } catch (e) {} }, 400);
+    }
+    function snapSave(d){
+      try {
+        if (!d.html || d.html.length > 450000) return;
+        localStorage.setItem('c16_snap', JSON.stringify({ html: d.html, css: d.css || '', at: d.at || Date.now(), build: d.build || '' }));
+      } catch (e) { try { localStorage.removeItem('c16_snap'); } catch (e2) {} }
+    }
+    snapShow();
     var ready = false;
     function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
     function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k) || ''; sessionStorage.setItem(k, v); } catch (e) { return ''; } }
@@ -69,7 +112,8 @@
     /* ── 시트에서 바꾼 로고·앱 이름을 탭 아이콘·제목에 바로 반영 (다음 접속엔 처음부터) ── */
     function applyIcon(url, name){
       if (url && /^https:\/\//.test(url)) {
-        ['favIc', 'appleIc'].forEach(function(id){ var l = document.getElementById(id); if (l && l.href !== url) l.href = url; });
+        /* 탭 아이콘만 앱 로고로 · 홈 화면(아이폰) 아이콘은 저장소의 apple-touch-icon.png (정확한 크기) */
+        ['favIc'].forEach(function(id){ var l = document.getElementById(id); if (l && l.href !== url) l.href = url; });
         ls('c16_icon', url);
       }
       if (name) { document.title = name; ls('c16_name', name); }
@@ -123,14 +167,14 @@
     /* ── 앱 불러오기: 구글 '껍데기' 가 뜬 것(load)이 아니라, 앱이 '준비됨' 을 보내야 로딩을 걷는다.
           안 오면 한 번은 새로 받아 다시 열고, 그래도 안 되면 안내와 버튼을 보여준다 (회색 화면 방지) ── */
     var tries = 0, readyTm = 0, slowTm = 0, loadT0 = 0, LOAD = null, bootAt = 0, booted = false;
-    function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail', 'hide'); if (cls) boot.classList.add(cls); }
+    function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail'); if (!SNAP || cls) boot.classList.remove('hide'); if (cls) boot.classList.add(cls); }
     function appUrl(fresh){ return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
     function loadApp(fresh, keepMsg){
       ready = false; booted = false; bootAt = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       if (!loadT0) loadT0 = Date.now();
       if (!keepMsg) bootMsg('');
       frame.src = appUrl(fresh);
-      slowTm = setTimeout(function(){ if (!ready) bootMsg('잠시만요, 불러오는 중이에요…', 'slow'); }, 7000);
+      slowTm = setTimeout(function(){ if (!ready && !SNAP) bootMsg('잠시만요, 불러오는 중이에요…', 'slow'); }, 7000);
       /* 앱이 '시작했다(boot)' 고 알려오지 않을 때만 한 번 다시 연다. 시작했으면 느려도 끝까지 기다린다
          (예전엔 15초가 지나면 다 와 가는 것을 버리고 처음부터 다시 불러와서 20초 넘게 걸렸다) */
       readyTm = setTimeout(function(){
@@ -139,7 +183,7 @@
         failMsg();
       }, tries ? 30000 : 22000);
     }
-    function failMsg(){ bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail'); }
+    function failMsg(){ snapHide(); bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail'); }
     function onBoot(){
       if (booted || ready) return;
       booted = true; bootAt = Date.now(); clearTimeout(readyTm);
@@ -148,6 +192,7 @@
     function onReady(d){
       if (loadT0) { var nowT = Date.now(); LOAD = { ms: nowT - loadT0, tries: tries, html: bootAt ? bootAt - loadT0 : 0, app: bootAt ? nowT - bootAt : 0 }; loadT0 = 0; }
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
+      snapHide();
       boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
       if (d) applyIcon(d.icon, d.name);
       sendDev();
@@ -305,6 +350,7 @@
         case 'ready': onReady(d); return;
         case 'alive': clearTimeout(aliveTm); stuckBar(false); return;
         case 'boot': onBoot(); return;
+        case 'snap': snapSave(d); return;
         case 'badge': applyBadge(d.n); return;
         case 'badgePerm': askBadge(); return;
         case 'pwaInstall': doPrompt(); return;

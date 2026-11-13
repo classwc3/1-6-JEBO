@@ -351,6 +351,7 @@
         case 'alive': clearTimeout(aliveTm); stuckBar(false); return;
         case 'boot': onBoot(); return;
         case 'snap': snapSave(d); return;
+        case 'snapClear': try { localStorage.removeItem('c16_snap'); } catch (e) {} snapHide(); return;   /* 차단·점검 중 */
         case 'badge': applyBadge(d.n); return;
         case 'badgePerm': askBadge(); return;
         case 'pwaInstall': doPrompt(); return;

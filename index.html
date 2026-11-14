@@ -56,6 +56,8 @@
       font:600 12.5px/1 system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif; padding:8px 12px; border-radius:999px; display:flex; align-items:center; gap:8px; white-space:nowrap; transition:opacity .3s; }
     #snapBar i{ width:12px; height:12px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:s .8s linear infinite; }
     #snapBar.off{ opacity:0; pointer-events:none; }
+    #snapBar.offline{ background:rgba(185,28,28,.9); }
+    #snapBar b.off{ color:#fecaca; font-size:10px; margin-right:2px; }
     .sheet{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:20; display:flex; align-items:center; gap:10px;
       padding:12px 14px; border-radius:16px; background:#0f1729; color:#fff; font-size:14px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
     .sheet span{ flex:1; line-height:1.45; }
@@ -77,12 +79,13 @@
     var boot = document.getElementById('boot'), frame = document.getElementById('site');
     /* ── 즉시 화면: 앱이 맡겨 둔 지난번 첫 화면을 바로 보여준다 (구글 서버를 기다리지 않는다) ── */
     var SNAP = null;
-    function snapShow(){
+    function snapShow(offline){
       try {
-        var raw = localStorage.getItem('c16_snap'); if (!raw) return;
-        var o = JSON.parse(raw); if (!o || !o.html || !o.css) return;
+        var raw = localStorage.getItem('c16_snap'); if (!raw) return false;
+        var o = JSON.parse(raw); if (!o || !o.html || !o.css) return false;
         var a0 = new Date(o.at), n0 = new Date();
-        if (a0.getFullYear() !== n0.getFullYear() || a0.getMonth() !== n0.getMonth() || a0.getDate() !== n0.getDate()) return;   /* 오늘 화면만 (어제 화면은 보여주지 않는다) */
+        if (!offline && (a0.getFullYear() !== n0.getFullYear() || a0.getMonth() !== n0.getMonth() || a0.getDate() !== n0.getDate())) return false;   /* 평소엔 오늘 화면만 · 연결이 없을 땐 마지막 화면 */
+        if (SNAP) { SNAP.box.remove(); SNAP.bar.remove(); SNAP = null; }
         var box = document.createElement('div'); box.id = 'snap';
         var fr = document.createElement('iframe'); fr.setAttribute('sandbox', 'allow-same-origin'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;   /* 스크립트는 막고, 보던 위치만 읽는다 */
         fr.srcdoc = '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -90,12 +93,15 @@
           + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>';
         box.appendChild(fr);
         var bar = document.createElement('div'); bar.id = 'snapBar';
-        bar.innerHTML = '<i></i><span>최신 정보 불러오는 중…</span>';
+        var when = (a0.getMonth() + 1) + '/' + a0.getDate() + ' ' + ('0' + a0.getHours()).slice(-2) + ':' + ('0' + a0.getMinutes()).slice(-2);
+        bar.innerHTML = offline ? '<b class="off">●</b><span>연결 안 됨 · ' + when + ' 화면이에요</span>' : '<i></i><span>최신 정보 불러오는 중…</span>';
+        if (offline) bar.classList.add('offline');
         box.addEventListener('click', function(){ bar.querySelector('span').textContent = '잠깐만요, 거의 다 됐어요…'; });
         document.body.appendChild(box); document.body.appendChild(bar);
-        SNAP = { box: box, bar: bar, fr: fr };
+        SNAP = { box: box, bar: bar, fr: fr, offline: !!offline };
         boot.classList.add('hide');                            /* 빈 로딩 화면 대신 지난번 화면 */
-      } catch (e) {}
+        return true;
+      } catch (e) { return false; }
     }
     function snapHide(){
       if (!SNAP) return; var s0 = SNAP; SNAP = null;
@@ -108,7 +114,9 @@
         localStorage.setItem('c16_snap', JSON.stringify({ html: d.html, css: d.css || '', at: d.at || Date.now(), build: d.build || '' }));
       } catch (e) { try { localStorage.removeItem('c16_snap'); } catch (e2) {} }
     }
-    snapShow();
+    if (navigator.onLine === false) snapShow(true); else snapShow();
+    /* 인터넷이 돌아오면 다시 불러온다 */
+    window.addEventListener('online', function(){ if (!ready) { tries = 0; loadApp(true); } });
     var ready = false;
     function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
     function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k) || ''; sessionStorage.setItem(k, v); } catch (e) { return ''; } }
@@ -187,7 +195,9 @@
         failMsg();
       }, tries ? 30000 : 22000);
     }
-    function failMsg(){ snapHide(); bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail'); }
+    function failMsg(){
+      if (snapShow(true)) return;                              /* 불러오지 못하면 마지막으로 본 화면 (연결 안 됨 표시) */
+      snapHide(); bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail'); }
     function onBoot(){
       if (booted || ready) return;
       booted = true; bootAt = Date.now(); clearTimeout(readyTm);

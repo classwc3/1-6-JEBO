@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- 앱(구글 서버)에 미리 연결 — 첫 화면 대기 시간을 줄인다 (crossorigin 없는 것은 앱 화면용, 있는 것은 '오늘 챙길 것' 요청용) -->
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.googleusercontent.com">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta name="mobile-web-app-capable" content="yes">
@@ -283,16 +287,31 @@
         }
       } catch (e2) {}
     }
+    /* 알림이 허용된 설치 앱: 서비스워커에 '오늘 챙길 것' 주소를 알려주고 주기적 확인을 등록한다 (앱이 닫혀 있어도 숫자·하루 한 번 알림) */
+    function setupDaily(){
+      try {
+        if (!isStandalone() || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        navigator.serviceWorker.ready.then(function(reg){
+          var api = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'api=today';
+          if (reg.active) reg.active.postMessage({ c16cfg: { api: api, icon: ls('c16_icon') || '' } });
+          if ('periodicSync' in reg) {
+            var go = function(){ reg.periodicSync.register('c16-today', { minInterval: 3 * 3600 * 1000 }).catch(function(){}); };
+            if (navigator.permissions && navigator.permissions.query) navigator.permissions.query({ name: 'periodic-background-sync' }).then(function(st){ if (st.state === 'granted') go(); }).catch(go); else go();
+          }
+        }).catch(function(){});
+      } catch (e) {}
+    }
     function askBadge(){
       if (typeof Notification === 'undefined') { post({ c16: 'badgePerm', state: 'unsupported' }); return; }
       var answered = false;
-      function back(s){ if (answered) return; answered = true; post({ c16: 'badgePerm', state: s }); applyBadge(ls('c16_badge')); sendPwa(); }
+      function back(s){ if (answered) return; answered = true; post({ c16: 'badgePerm', state: s }); applyBadge(ls('c16_badge')); sendPwa(); setupDaily(); }
       try {
         var p = Notification.requestPermission(back);
         if (p && p.then) p.then(back).catch(function(){ showSheet('아이콘 숫자를 켜려면 한 번 더 눌러주세요', '🔔 켜기', askBadge); });
       } catch (e) { showSheet('아이콘 숫자를 켜려면 한 번 더 눌러주세요', '🔔 켜기', askBadge); }
     }
     if (isStandalone() && ls('c16_badge')) setTimeout(function(){ applyBadge(ls('c16_badge')); }, 800);
+    setTimeout(setupDaily, 3000);
 
     /* ── 카카오톡 등 앱 안 브라우저 → 외부 브라우저로 (삼성 인터넷 → 크롬 → 사파리 → 엣지) ── */
     var ua = navigator.userAgent || '';

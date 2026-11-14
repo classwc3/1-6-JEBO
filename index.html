@@ -84,7 +84,7 @@
         var a0 = new Date(o.at), n0 = new Date();
         if (a0.getFullYear() !== n0.getFullYear() || a0.getMonth() !== n0.getMonth() || a0.getDate() !== n0.getDate()) return;   /* 오늘 화면만 (어제 화면은 보여주지 않는다) */
         var box = document.createElement('div'); box.id = 'snap';
-        var fr = document.createElement('iframe'); fr.setAttribute('sandbox', ''); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+        var fr = document.createElement('iframe'); fr.setAttribute('sandbox', 'allow-same-origin'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;   /* 스크립트는 막고, 보던 위치만 읽는다 */
         fr.srcdoc = '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
           + '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">'
           + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>';
@@ -93,7 +93,7 @@
         bar.innerHTML = '<i></i><span>최신 정보 불러오는 중…</span>';
         box.addEventListener('click', function(){ bar.querySelector('span').textContent = '잠깐만요, 거의 다 됐어요…'; });
         document.body.appendChild(box); document.body.appendChild(bar);
-        SNAP = { box: box, bar: bar };
+        SNAP = { box: box, bar: bar, fr: fr };
         boot.classList.add('hide');                            /* 빈 로딩 화면 대신 지난번 화면 */
       } catch (e) {}
     }
@@ -196,7 +196,9 @@
     function onReady(d){
       if (loadT0) { var nowT = Date.now(); LOAD = { ms: nowT - loadT0, tries: tries, html: bootAt ? bootAt - loadT0 : 0, app: bootAt ? nowT - bootAt : 0 }; loadT0 = 0; }
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
-      snapHide();
+      /* 즉시 화면을 내려 보던 중이면 앱도 그 위치에서 시작 (위로 튕기지 않게) */
+      var sy = 0; try { var se = SNAP && SNAP.fr.contentDocument && SNAP.fr.contentDocument.scrollingElement; sy = se ? se.scrollTop : 0; } catch (eS) {}
+      if (sy > 0) { post({ c16: 'scrollTo', y: sy }); setTimeout(snapHide, 90); } else snapHide();
       boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
       if (d) applyIcon(d.icon, d.name);
       sendDev();

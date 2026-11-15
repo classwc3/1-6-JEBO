@@ -200,6 +200,7 @@
     /* 앱은 구글 Apps Script 틀 두 겹 안쪽에서 돈다. 바깥 틀에 보내면 구글이 버린다(dropping postMessage)
        → 안쪽 창들에 직접 보낸다 (다른 출처라도 frames 목록과 postMessage 는 쓸 수 있다) */
     function post(msg){
+      try { if (frame.contentWindow && frame.contentWindow.location.origin === location.origin) { frame.contentWindow.postMessage(msg, location.origin); return; } } catch (eO) {}   /* 같은 사이트의 app.html: 바로 */
       try {
         var walk = function (win, depth) {
           var n = 0; try { n = win.frames.length; } catch (e) { return; }
@@ -214,7 +215,12 @@
           안 오면 한 번은 새로 받아 다시 열고, 그래도 안 되면 안내와 버튼을 보여준다 (회색 화면 방지) ── */
     var tries = 0, readyTm = 0, slowTm = 0, loadT0 = 0, LOAD = null, bootAt = 0, booted = false;
     function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail'); if (!SNAP || cls) boot.classList.remove('hide'); if (cls) boot.classList.add(cls); }
-    function appUrl(fresh){ return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
+    /* 앱 화면은 이 사이트의 app.html 에서 바로 (자료만 구글에 묻는다 → 구글 화면 페이지를 기다리지 않는다).
+       안 뜨면 다시 열 때는 예전처럼 구글 화면 페이지로 (안전장치) */
+    var STATIC_OK = location.protocol !== 'file:' && !/[?&]gas=1/.test(location.search) && ls('c16_mode') !== 'gas';   /* 비상 스위치: 주소 뒤 ?gas=1 이면 예전 방식(구글 화면)으로 */
+    function appUrl(fresh){
+      if (STATIC_OK && tries < 1) return '/app.html?d=' + encodeURIComponent(deviceId()) + (fresh ? '&_r=' + Date.now() : '');
+      return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
     function loadApp(fresh, keepMsg){
       ready = false; booted = false; bootAt = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       if (!loadT0) loadT0 = Date.now();
@@ -411,11 +417,12 @@
     /* ── 앱(iframe)에서 오는 신호 ── */
     window.addEventListener('message', function(e){
       var host = ''; try { host = new URL(e.origin).hostname; } catch (x) {}
-      if (!/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;
+      if (e.origin !== location.origin && !/(\.googleusercontent\.com|^script\.google\.com)$/.test(host)) return;   /* 같은 사이트의 app.html 신호도 받는다 */
       var d = e.data || {};
       switch (d.c16) {
         case 'ready': onReady(d); return;
         case 'pos': APP_Y = { y: Number(d.y) || 0, at: Date.now() }; return;
+        case 'staticFail': if (STATIC_OK) { STATIC_OK = false; tries = 1; loadApp(true, true); } return;   /* 자료 입구가 막힌 곳: 예전 방식으로 */
         case 'alive': clearTimeout(aliveTm); stuckBar(false); return;
         case 'boot': onBoot(); return;
         case 'snap': snapSave(d); return;

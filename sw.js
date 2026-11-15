@@ -1,8 +1,8 @@
 /* 1-6.웹.한국 서비스 워커 — '홈 화면에 추가'(앱 설치)·아이콘 숫자(알림) 에 필요하다.
    바깥 화면은 네트워크에서 새로 받되, 2.5초 안에 오지 않으면 저장해 둔 것으로 바로 연다(느린 데이터망에서 기다리지 않게).
    늦게 온 새 화면은 저장만 해 두고 다음에 쓴다. 아이콘·매니페스트는 저장본을 먼저 쓴다. */
-var CACHE = 'c16-v10';
-var SHELL = ['./', 'manifest.json'];   /* 로고는 시트에 등록한 아이콘만 (GitHub 로고 파일은 쓰지 않는다) */
+var CACHE = 'c16-v11';
+var SHELL = ['./', 'manifest.json', 'app.html'];   /* 로고는 시트에 등록한 아이콘만 (GitHub 로고 파일은 쓰지 않는다) */
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) { return Promise.all(SHELL.map(function (u) { return c.add(u).catch(function () {}); })); }));
@@ -11,6 +11,19 @@ self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); }));
 });
 self.addEventListener('fetch', function (e) {
+  try {
+    var u0 = new URL(e.request.url);
+    if (u0.origin === location.origin && /\/app\.html$/.test(u0.pathname)) {   /* 앱 화면: 저장본으로 바로 → 뒤에서 새것으로 바꿔 둔다 */
+      e.respondWith(caches.open(CACHE).then(function (c) {
+        return c.match('app.html').then(function (hit) {
+          var net = fetch('app.html', { cache: 'no-cache' }).then(function (r) { if (r && r.ok) c.put('app.html', r.clone()); return r; }).catch(function () { return hit; });
+          return hit || net;
+        });
+      }));
+      return;
+    }
+  } catch (eA) {}
+
   var req = e.request, url = new URL(req.url);
   if (url.origin !== self.location.origin || req.method !== 'GET') return;     /* 앱(구글 서버) 요청은 건드리지 않는다 */
   if (req.mode === 'navigate') {

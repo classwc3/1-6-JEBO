@@ -208,6 +208,7 @@
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       /* 즉시 화면을 내려 보던 중이면 앱도 그 위치에서 시작 (위로 튕기지 않게) */
       var sy = 0; try { var se = SNAP && SNAP.fr.contentDocument && SNAP.fr.contentDocument.scrollingElement; sy = se ? se.scrollTop : 0; } catch (eS) {}
+      try { sy = Math.max(sy, window.scrollY || 0, (SNAP && SNAP.box && SNAP.box.scrollTop) || 0); if (window.scrollY) window.scrollTo(0, 0); } catch (eS2) {}   /* 부모 페이지가 스크롤된 경우까지 */
       if (sy > 0) { post({ c16: 'scrollTo', y: sy }); setTimeout(snapHide, 90); } else snapHide();
       boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
       if (d) applyIcon(d.icon, d.name);

@@ -78,7 +78,7 @@
     var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
     var boot = document.getElementById('boot'), frame = document.getElementById('site');
     /* ── 즉시 화면: 앱이 맡겨 둔 지난번 첫 화면을 바로 보여준다 (구글 서버를 기다리지 않는다) ── */
-    var SNAP = null;
+    var SNAP = null, APP_Y = { y: 0, at: 0 };   /* 앱이 알려 주는 스크롤 위치 */
     function snapShow(offline){
       try {
         var raw = localStorage.getItem('c16_snap'); if (!raw) return false;
@@ -208,6 +208,7 @@
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       /* 즉시 화면을 내려 보던 중이면 앱도 그 위치에서 시작 (위로 튕기지 않게) */
       var sy = 0; try { var se = SNAP && SNAP.fr.contentDocument && SNAP.fr.contentDocument.scrollingElement; sy = se ? se.scrollTop : 0; } catch (eS) {}
+      if (!sy && APP_Y.y > 0 && Date.now() - APP_Y.at < 60000) sy = APP_Y.y;   /* 앱이 다시 떴으면(새로고침·재시도) 직전에 보던 위치로 */
       try { sy = Math.max(sy, window.scrollY || 0, (SNAP && SNAP.box && SNAP.box.scrollTop) || 0); if (window.scrollY) window.scrollTo(0, 0); } catch (eS2) {}   /* 부모 페이지가 스크롤된 경우까지 */
       if (sy > 0) { post({ c16: 'scrollTo', y: sy }); setTimeout(snapHide, 90); } else snapHide();
       boot.classList.remove('slow', 'fail'); boot.classList.add('hide');
@@ -380,6 +381,7 @@
       var d = e.data || {};
       switch (d.c16) {
         case 'ready': onReady(d); return;
+        case 'pos': APP_Y = { y: Number(d.y) || 0, at: Date.now() }; return;
         case 'alive': clearTimeout(aliveTm); stuckBar(false); return;
         case 'boot': onBoot(); return;
         case 'snap': snapSave(d); return;

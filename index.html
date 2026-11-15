@@ -25,9 +25,8 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#F4F6FB">
-  <link rel="icon" type="image/png" id="favIc" href="/favicon-48.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" id="appleIc" href="/apple-touch-icon.png">
+  <link rel="icon" id="favIc" href="data:,">
+    <link rel="apple-touch-icon" id="appleIc" href="data:,">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
@@ -145,7 +144,7 @@
       else fetch('/manifest.json', { cache: 'force-cache' }).then(function (r) { return r.json(); }).then(function (j) { MANIFEST_BASE = j; go(j); }).catch(function () { go({}); });
     }
     function applyIcon(url, name){
-      if (url && /^https:\/\//.test(url)) {
+      if (url && /^(https:\/\/|http:\/\/localhost[:/])/.test(url)) {
         /* 시트에 등록한 아이콘을 모든 곳에: 탭 · 아이폰 홈 화면 · 설치 앱(manifest) · 알림 */
         var fav = document.getElementById('favIc'); if (fav && fav.href !== iconAt(url, 64)) fav.href = iconAt(url, 64);
         var ap = document.getElementById('appleIc'); if (ap && ap.href !== iconAt(url, 180)) ap.href = iconAt(url, 180);

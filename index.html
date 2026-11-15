@@ -122,11 +122,36 @@
     function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k) || ''; sessionStorage.setItem(k, v); } catch (e) { return ''; } }
 
     /* ── 시트에서 바꾼 로고·앱 이름을 탭 아이콘·제목에 바로 반영 (다음 접속엔 처음부터) ── */
+    function iconAt(url, px){   /* 구글 이미지 주소는 끝에 =s크기 를 붙이면 그 크기로 받을 수 있다 */
+      if (/googleusercontent\.com\//.test(url)) return url.replace(/=[swh]\d[^/]*$/, '') + '=s' + px;
+      return url;
+    }
+    var MANIFEST_BASE = null;
+    function setManifest(url, name){
+      /* 설치 앱(안드로이드) 아이콘도 시트에 등록한 아이콘으로: 원래 manifest 를 읽어 아이콘·이름만 바꿔 다시 연결 */
+      var link = document.querySelector('link[rel="manifest"]'); if (!link || !url) return;
+      var go = function (base) {
+        try {
+          var m = JSON.parse(JSON.stringify(base || {}));
+          m.start_url = location.origin + '/'; m.scope = location.origin + '/'; m.id = '/';
+          if (name) m.name = name;
+          m.icons = [{ src: iconAt(url, 192), sizes: '192x192', purpose: 'any' }, { src: iconAt(url, 512), sizes: '512x512', purpose: 'any' }, { src: iconAt(url, 512), sizes: '512x512', purpose: 'maskable' }];
+          var u = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+          if (link.getAttribute('data-blob')) { try { URL.revokeObjectURL(link.getAttribute('data-blob')); } catch (e0) {} }
+          link.setAttribute('data-blob', u); link.href = u;
+        } catch (e) {}
+      };
+      if (MANIFEST_BASE) go(MANIFEST_BASE);
+      else fetch('/manifest.json', { cache: 'force-cache' }).then(function (r) { return r.json(); }).then(function (j) { MANIFEST_BASE = j; go(j); }).catch(function () { go({}); });
+    }
     function applyIcon(url, name){
       if (url && /^https:\/\//.test(url)) {
-        /* 탭 아이콘만 앱 로고로 · 홈 화면(아이폰) 아이콘은 저장소의 apple-touch-icon.png (정확한 크기) */
-        ['favIc'].forEach(function(id){ var l = document.getElementById(id); if (l && l.href !== url) l.href = url; });
+        /* 시트에 등록한 아이콘을 모든 곳에: 탭 · 아이폰 홈 화면 · 설치 앱(manifest) · 알림 */
+        var fav = document.getElementById('favIc'); if (fav && fav.href !== iconAt(url, 64)) fav.href = iconAt(url, 64);
+        var ap = document.getElementById('appleIc'); if (ap && ap.href !== iconAt(url, 180)) ap.href = iconAt(url, 180);
+        if (ls('c16_icon') !== url || !document.querySelector('link[rel="manifest"][data-blob]')) setManifest(url, name || ls('c16_name'));
         ls('c16_icon', url);
+        try { if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({ c16cfg: { icon: iconAt(url, 192) } }); } catch (eS) {}
       }
       if (name) { document.title = name; ls('c16_name', name); }
     }

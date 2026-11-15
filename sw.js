@@ -1,8 +1,8 @@
 /* 1-6.웹.한국 서비스 워커 — '홈 화면에 추가'(앱 설치)·아이콘 숫자(알림) 에 필요하다.
    바깥 화면은 네트워크에서 새로 받되, 2.5초 안에 오지 않으면 저장해 둔 것으로 바로 연다(느린 데이터망에서 기다리지 않게).
    늦게 온 새 화면은 저장만 해 두고 다음에 쓴다. 아이콘·매니페스트는 저장본을 먼저 쓴다. */
-var CACHE = 'c16-v9';
-var SHELL = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png', 'favicon-48.png'];
+var CACHE = 'c16-v10';
+var SHELL = ['./', 'manifest.json'];   /* 로고는 시트에 등록한 아이콘만 (GitHub 로고 파일은 쓰지 않는다) */
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) { return Promise.all(SHELL.map(function (u) { return c.add(u).catch(function () {}); })); }));
@@ -24,7 +24,7 @@ self.addEventListener('fetch', function (e) {
     e.waitUntil(net.catch(function () {}));
     return;
   }
-  if (/\/(icon-[\w-]+|apple-touch-icon|favicon-48)\.png$|\/manifest\.json$/.test(url.pathname)) {
+  if (/\/manifest\.json$/.test(url.pathname)) {
     e.respondWith(caches.match(req).then(function (hit) { return hit || fetch(req).then(function (r) { var copy = r.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); return r; }); }));
   }
 });
@@ -48,7 +48,7 @@ function dailyCheck() {
       if (!n || !t.title || cfg.shown === t.date || h < 6 || h >= 21) return;           /* 하루 한 번 · 아침 6시~밤 9시 */
       if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
       cfg.shown = t.date;
-      return cfgPut(cfg).then(function () { return self.registration.showNotification(t.title, { tag: 'c16-today', body: t.body || '', icon: cfg.icon || 'icon-192.png', badge: 'icon-192.png', data: { url: '/' } }); });
+      return cfgPut(cfg).then(function () { return self.registration.showNotification(t.title, { tag: 'c16-today', body: t.body || '', icon: cfg.icon || undefined, badge: cfg.icon || undefined, data: { url: '/' } }); });
     });
   }).catch(function () {});
 }

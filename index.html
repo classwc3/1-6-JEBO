@@ -88,9 +88,9 @@
         if (SNAP) { SNAP.box.remove(); SNAP.bar.remove(); SNAP = null; }
         var box = document.createElement('div'); box.id = 'snap';
         var fr = document.createElement('iframe'); fr.setAttribute('sandbox', 'allow-same-origin'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;   /* 스크립트는 막고, 보던 위치만 읽는다 */
-        fr.srcdoc = '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        fr.srcdoc = ('<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
           + '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">'
-          + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>';
+          + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>').replace(/<script[\s\S]*?<\/script>/gi, '');   /* 사진에 남은 스크립트는 빼고 (잠긴 창이라 어차피 못 돌고 경고만 남긴다) */
         box.appendChild(fr);
         var bar = document.createElement('div'); bar.id = 'snapBar';
         var when = (a0.getMonth() + 1) + '/' + a0.getDate() + ' ' + ('0' + a0.getHours()).slice(-2) + ':' + ('0' + a0.getMinutes()).slice(-2);
@@ -173,7 +173,17 @@
       }
       next();
     }
-    function post(msg){ try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }
+    /* 앱은 구글 Apps Script 틀 두 겹 안쪽에서 돈다. 바깥 틀에 보내면 구글이 버린다(dropping postMessage)
+       → 안쪽 창들에 직접 보낸다 (다른 출처라도 frames 목록과 postMessage 는 쓸 수 있다) */
+    function post(msg){
+      try {
+        var walk = function (win, depth) {
+          var n = 0; try { n = win.frames.length; } catch (e) { return; }
+          for (var i = 0; i < n; i++) { var f = null; try { f = win.frames[i]; f.postMessage(msg, '*'); } catch (e2) {} if (f && depth < 3) walk(f, depth + 1); }
+        };
+        walk(frame.contentWindow, 1);
+      } catch (e) {}
+    }
     function sendDev(){ post({ c16: 'dev', id: deviceId(), ip: MY_IP || '', load: LOAD }); sendPwa(); }
 
     /* ── 앱 불러오기: 구글 '껍데기' 가 뜬 것(load)이 아니라, 앱이 '준비됨' 을 보내야 로딩을 걷는다.

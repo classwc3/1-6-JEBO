@@ -219,8 +219,9 @@
     /* 앱 화면은 이 사이트의 app.html 에서 바로 (자료만 구글에 묻는다 → 구글 화면 페이지를 기다리지 않는다).
        안 뜨면 다시 열 때는 예전처럼 구글 화면 페이지로 (안전장치) */
     function appUrl(fresh){
-      if (STATIC_OK && !USE_GAS) return '/app.html?d=' + encodeURIComponent(deviceId()) + (fresh ? '&_r=' + Date.now() : '');
-      return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
+      var vw = (location.search.match(/[?&]view=(today|tt)\b/) || [])[1];   /* 교실 모니터: 주소 뒤 ?view=today 를 앱에도 */
+      if (STATIC_OK && !USE_GAS) return '/app.html?d=' + encodeURIComponent(deviceId()) + (vw ? '&view=' + vw : '') + (fresh ? '&_r=' + Date.now() : '');
+      return APP + (vw ? '?view=' + vw + '&d=' : '?d=') + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
     function loadApp(fresh, keepMsg){
       ready = false; booted = false; bootAt = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       if (!loadT0) loadT0 = Date.now();

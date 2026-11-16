@@ -25,8 +25,8 @@
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#F4F6FB">
-  <link rel="icon" id="favIc" href="data:,">
-    <link rel="apple-touch-icon" id="appleIc" href="data:,">
+  <link rel="icon" id="favIc" href="https://lh3.googleusercontent.com/d/18scqyld91nNMDuAGyrsq-I721g_OoBuj=s64-rp">
+    <link rel="apple-touch-icon" id="appleIc" href="https://lh3.googleusercontent.com/d/18scqyld91nNMDuAGyrsq-I721g_OoBuj=s180-rp">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
@@ -89,7 +89,7 @@
         var fr = document.createElement('iframe'); fr.setAttribute('sandbox', 'allow-same-origin'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;   /* 스크립트는 막고, 보던 위치만 읽는다 */
         fr.srcdoc = ('<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
           + '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">'
-          + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>').replace(/<script[\s\S]*?<\/script>/gi, '');   /* 사진에 남은 스크립트는 빼고 (잠긴 창이라 어차피 못 돌고 경고만 남긴다) */
+          + '<style>' + o.css + '\nhtml,body{pointer-events:none}</style></head><body>' + o.html + '</body></html>').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, '');   /* 사진에 남은 스크립트는 빼고 (잠긴 창이라 어차피 못 돌고 경고만 남긴다) */
         box.appendChild(fr);
         var bar = document.createElement('div'); bar.id = 'snapBar';
         var when = (a0.getMonth() + 1) + '/' + a0.getDate() + ' ' + ('0' + a0.getHours()).slice(-2) + ':' + ('0' + a0.getMinutes()).slice(-2);
@@ -113,7 +113,9 @@
         localStorage.setItem('c16_snap', JSON.stringify({ html: d.html, css: d.css || '', at: d.at || Date.now(), build: d.build || '' }));
       } catch (e) { try { localStorage.removeItem('c16_snap'); } catch (e2) {} }
     }
-    if (navigator.onLine === false) snapShow(true); else snapShow();
+    var USE_GAS = false;   /* 정적 앱이 아예 안 뜨거나 자료 입구가 막힌 경우에만 예전 방식으로 (앱이 요청한 다시 열기는 정적 앱으로) */
+    var STATIC_OK = location.protocol !== 'file:' && !/[?&]gas=1/.test(location.search) && ls('c16_mode') !== 'gas';   /* 비상 스위치: 주소 뒤 ?gas=1 이면 예전 방식(구글 화면)으로 */
+    /* 지난 화면 사진(가짜 화면)은 쓰지 않는다 — 앱 자체가 저장된 자료로 바로 뜬다 */
     /* 인터넷이 돌아오면 다시 불러온다 */
     window.addEventListener('online', function(){ if (!ready) { tries = 0; loadApp(true); } });
     var ready = false;
@@ -122,7 +124,7 @@
 
     /* ── 시트에서 바꾼 로고·앱 이름을 탭 아이콘·제목에 바로 반영 (다음 접속엔 처음부터) ── */
     function iconAt(url, px){   /* 구글 이미지 주소는 끝에 =s크기 를 붙이면 그 크기로 받을 수 있다 */
-      if (/googleusercontent\.com\//.test(url)) return url.replace(/=[swh]\d[^/]*$/, '') + '=s' + px;
+      if (/googleusercontent\.com\//.test(url)) return url.replace(/=[swh]\d[^/]*$/, '') + '=s' + px + '-rp';   /* PNG 로 (설치 아이콘은 PNG 여야) */
       return url;
     }
     var MANIFEST_BASE = null;
@@ -148,7 +150,6 @@
         /* 시트에 등록한 아이콘을 모든 곳에: 탭 · 아이폰 홈 화면 · 설치 앱(manifest) · 알림 */
         var fav = document.getElementById('favIc'); if (fav && fav.href !== iconAt(url, 64)) fav.href = iconAt(url, 64);
         var ap = document.getElementById('appleIc'); if (ap && ap.href !== iconAt(url, 180)) ap.href = iconAt(url, 180);
-        if (ls('c16_icon') !== url || !document.querySelector('link[rel="manifest"][data-blob]')) setManifest(url, name || ls('c16_name'));
         ls('c16_icon', url);
         try { if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({ c16cfg: { icon: iconAt(url, 192) } }); } catch (eS) {}
       }
@@ -217,9 +218,8 @@
     function bootMsg(html, cls){ var m = document.getElementById('bootMsg'); m.innerHTML = html || ''; boot.classList.remove('slow', 'fail'); if (!SNAP || cls) boot.classList.remove('hide'); if (cls) boot.classList.add(cls); }
     /* 앱 화면은 이 사이트의 app.html 에서 바로 (자료만 구글에 묻는다 → 구글 화면 페이지를 기다리지 않는다).
        안 뜨면 다시 열 때는 예전처럼 구글 화면 페이지로 (안전장치) */
-    var STATIC_OK = location.protocol !== 'file:' && !/[?&]gas=1/.test(location.search) && ls('c16_mode') !== 'gas';   /* 비상 스위치: 주소 뒤 ?gas=1 이면 예전 방식(구글 화면)으로 */
     function appUrl(fresh){
-      if (STATIC_OK && tries < 1) return '/app.html?d=' + encodeURIComponent(deviceId()) + (fresh ? '&_r=' + Date.now() : '');
+      if (STATIC_OK && !USE_GAS) return '/app.html?d=' + encodeURIComponent(deviceId()) + (fresh ? '&_r=' + Date.now() : '');
       return APP + '?d=' + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
     function loadApp(fresh, keepMsg){
       ready = false; booted = false; bootAt = 0; clearTimeout(readyTm); clearTimeout(slowTm);
@@ -231,12 +231,11 @@
          (예전엔 15초가 지나면 다 와 가는 것을 버리고 처음부터 다시 불러와서 20초 넘게 걸렸다) */
       readyTm = setTimeout(function(){
         if (ready || booted) return;
-        if (tries < 1) { tries++; loadApp(false, true); return; }
+        if (tries < 1) { tries++; if (STATIC_OK) USE_GAS = true; loadApp(false, true); return; }
         failMsg();
       }, tries ? 30000 : 22000);
     }
     function failMsg(){
-      if (snapShow(true)) return;                              /* 불러오지 못하면 마지막으로 본 화면 (연결 안 됨 표시) */
       snapHide(); bootMsg('<b>화면을 불러오지 못했어요</b>인터넷 연결을 확인하고 다시 불러와 주세요.<br>계속 안 되면 \'바로 열기\' 를 눌러주세요.', 'fail'); }
     function onBoot(){
       if (booted || ready) return;
@@ -422,7 +421,7 @@
       switch (d.c16) {
         case 'ready': onReady(d); return;
         case 'pos': APP_Y = { y: Number(d.y) || 0, at: Date.now() }; return;
-        case 'staticFail': if (STATIC_OK) { STATIC_OK = false; tries = 1; loadApp(true, true); } return;   /* 자료 입구가 막힌 곳: 예전 방식으로 */
+        case 'staticFail': if (STATIC_OK && !USE_GAS) { USE_GAS = true; tries = 1; loadApp(true, true); } return;   /* 자료 입구가 막힌 곳: 예전 방식으로 */
         case 'alive': clearTimeout(aliveTm); stuckBar(false); return;
         case 'boot': onBoot(); return;
         case 'snap': snapSave(d); return;

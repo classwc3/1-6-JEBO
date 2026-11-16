@@ -1573,11 +1573,48 @@ button[data-arm][disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
 .subj-pill.ren{padding:3px 4px 3px 8px;gap:4px}
 .subj-pill.ren input{border:1px solid var(--line2);border-radius:8px;padding:4px 8px;font-size:13px;font-weight:700;width:110px}
 .subj-pill.ren button.ok{width:auto;padding:0 8px;border-radius:8px;background:var(--brand);color:#fff;font-weight:800;font-size:12px}
+.net-bar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);z-index:900;background:rgba(185,28,28,.92);color:#fff;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;display:flex;gap:8px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.18);white-space:nowrap}
+.net-bar b{color:#fecaca}
+.ver-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:900;border:0;background:#111827;color:#fff;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;white-space:nowrap}
+.ver-bar b{color:#a5b4fc;margin-left:6px}
+.ren-log{margin-top:12px;border-top:1px solid var(--line2);padding-top:10px}
+.ren-h{font-size:12.5px;font-weight:800;color:var(--soft);margin-bottom:6px}
+.ren-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+.ren-row span{flex:1;font-size:13px}
+.ren-row s{color:var(--faint)}
+.ren-row small{display:block;font-size:11.5px;color:var(--faint)}
+.exa-ranges{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.exa-rg{display:flex;align-items:flex-start;gap:8px}
+.exa-rg span{flex:0 0 52px;font-size:13px;font-weight:800;color:var(--soft);padding-top:10px}
+.exa-rg textarea{flex:1;min-height:42px;resize:none;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font:inherit;font-size:14.5px;line-height:1.45;box-sizing:border-box;overflow:hidden}
+.ex-rl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.ex-rl li{display:flex;gap:6px;line-height:1.45;font-size:13px}
+.ex-rl li b{flex:0 0 auto;color:var(--danger,#b42318);font-weight:800}
+.ex-rl li b::before{content:'◦ ';color:var(--faint)}
+.ex-rl li span{word-break:keep-all;overflow-wrap:anywhere}
+#mealPop.narrow .mlc-head{display:none}
+.mll-wk{flex:0 0 auto;background:var(--card);border-radius:12px;margin:0 0 10px;overflow:hidden;border:1px solid var(--line2)}
+.mll-day{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-top:1px solid var(--line2)}
+.mll-day:first-child{border-top:0}
+.mll-day.past{opacity:.55}
+.mll-day.today{background:#eef2ff}
+.mll-d{flex:0 0 34px;text-align:center;line-height:1.1}
+.mll-d b{display:block;font-size:17px;font-weight:800}
+.mll-d small{font-size:11.5px;color:var(--soft);font-weight:700}
+.mll-day.today .mll-d b{color:var(--brand)}
+.mll-m{flex:1;font-size:14px;line-height:1.55;color:var(--ink,#111827)}
+.mll-m span:not(:last-child)::after{content:' · ';color:var(--faint)}
+.mll-m span.w{color:#b42318;font-weight:700}
+.mll-m em{font-style:normal;color:var(--faint);font-size:13px}
+.mll-m em.hol{color:#b42318;font-weight:700}
+@media(max-width:560px){
+  .perf-item .pname{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.35}   /* 휴대폰: 평가 제목 두 줄까지 */
+}
 </style>
 
 <script>
 /* 정적 모드: 앱 화면은 GitHub 에서, 자료는 구글(doPost)에서 */
-window.__API__ = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
+window.__API__ = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec'; window.__APP_BUILD__ = '2026-11-17y';
 (function(){
   try{ var q=new URLSearchParams(location.search), d=q.get('d'); if(d && /^[A-Za-z0-9_-]{6,64}$/.test(d)) window.__DEV__=d; }catch(e){}
   function call(fn, args){
@@ -1860,7 +1897,7 @@ var MAINT = false;
 var VIEW = 'main';            // 새로고침하면 언제나 'main' 에서 시작
 var S = { view: 'week', selDate: null };
 var rankTab = '전체';
-var POLL_TOKEN = String(B.token || '');
+var POLL_TOKEN = String(B.token || ''), TOKEN_ADOPTED = false;
 var EVENTS = [];
 var PING_TIMER = null, FIRST_PING = true;
 
@@ -2096,6 +2133,7 @@ function handleStatus_(r){
   }
   if(r.maintenance && !ADMIN){ MAINT=true; showOverlay_('maint', r.maintenanceMsg); return; }
   if(!r.maintenance && MAINT){ MAINT=false; hardReload_('maint'); return; }
+  if(!TOKEN_ADOPTED){ TOKEN_ADOPTED=true; POLL_TOKEN=String(r.token||''); stSet_('tt_force_token', POLL_TOKEN); return; }   /* 첫 상태 확인: 서버 표시를 받아들이기만 (방금 연 앱을 또 다시 열지 않는다) */
   if(r.tokenChanged && String(r.token||'') !== POLL_TOKEN){
     /* 관리자가 [전체 강제 새로고침]을 눌렀다 → 페이지를 통째로 다시 연다.
        나중에 접속하는 사람은 서버 캐시가 이미 비워져 있어 자동으로 새 버전을 받는다. */
@@ -2281,7 +2319,7 @@ function initAfterBoot_(){
       if(ry && ry.y>0 && Date.now()-ry.t<60000){ HANDOFF={ y:ry.y, until:Date.now()+5000 }; SCR_LAST=ry.y; jumpTo_(ry.y); } }catch(eRy){}   /* 다시 열린 앱: 직전 위치 */
     postParent_({ c16:'ready', icon:B.iconUrl||'', name:(B.config&&B.config['앱이름'])||'' });
     setTimeout(replayMsgs_, 0);                                   /* 준비 전에 온 신호 처리 */
-    setTimeout(snapSend_, 2500);                              /* 첫 화면을 다 그리고 조금 뒤 */
+    try{ postParent_({ c16:'snapClear' }); }catch(eSc){}          /* 지난 화면 사진(가짜 화면)은 쓰지 않는다 — 남아 있으면 지운다 */
   }
 
   /* ?view=today 로 들어오면 시간표만 보이는 모드로 (저장하지 않음) */
@@ -2295,6 +2333,7 @@ function initAfterBoot_(){
   var evs = EVENTS.splice(0, 40);
   FIRST_PING = false;
   var FL_T0 = Date.now();
+  if(!NOTIFY_STATE.name && stGet_('tt_me')){ NOTIFY_STATE.name=stGet_('tt_me'); try{ updateNotifyBtn_(); }catch(eN){} }   /* 저장된 이름으로 바로 */
   run('firstLoad', { ip:IP, ua:UA, deviceId:DEVICE_ID, tab:VIEW, token:POLL_TOKEN,
                      events:evs, first:true, admin:ADMIN })
     .then(function(r){
@@ -2302,6 +2341,9 @@ function initAfterBoot_(){
       if(r && r.notify){
         /* 대답이 오기 전에 이름을 저장했으면 그 이름이 이긴다 (예전엔 늦게 온 '이름 없음'이 덮어쓰고 창을 다시 열었다) */
         if(!(NAME_SAVED && NAME_SAVED.at >= FL_T0)) NOTIFY_STATE={subscribed:!!r.notify.subscribed,name:r.notify.name||'',email:r.notify.email||''};
+        var keptName=stGet_('tt_me')||'';
+        if(!NOTIFY_STATE.name && keptName){ NOTIFY_STATE.name=keptName; run('meLogin', { name:keptName, deviceId:DEVICE_ID, ip:IP, ua:UA, fp:(typeof FP!=='undefined'?FP:'') }).catch(function(){}); }   /* 서버가 잊었으면 저장된 이름으로 조용히 다시 등록 */
+        algRestore_(r.notify.alg);
         updateNotifyBtn_();
         try{
           /* 처음 오면(이 기기에 이름이 없으면) 설정부터 — 이름을 고르는 게 곧 로그인 */
@@ -2316,7 +2358,7 @@ function initAfterBoot_(){
       if(BLOCKED) return;
       applyTimetable_(r && r.tt);
     })
-    .catch(function(){ useOffline_(); refreshTimetableBg_(); });
+    .catch(function(){ if(window.__API__ && TT){ netBar_(true); return; } useOffline_(); refreshTimetableBg_(); });   /* 정적 모드: 저장된 자료가 있으면 그대로 · 띠만 */
 
   /* 첫 화면엔 2주치만 실려 온다 → 나머지 주차를 조용히 받아 채운다 */
   if(TT && TT.partial) setTimeout(function(){ refreshTimetableBg_(); }, 400);
@@ -2378,7 +2420,7 @@ function silentBootRefresh_(){
     if(!nb || !nb.config) return;
     if(busyNow_()){ setTimeout(function(){ SILENT_GATE=0; silentBootRefresh_(); }, 30000); return; }
     var keepTt = TT;
-    B = nb; if(!B.timetable) B.timetable = keepTt; bootKeep_(B);
+    B = nb; if(!B.timetable) B.timetable = keepTt; bootKeep_(B); netBar_(false); verCheck_();
     TT = B.timetable || TT; RANK = B.rank || RANK;
     var d=secData_(), changed=[];
     Object.keys(d).forEach(function(k){ var g=sig_(d[k]); if(SEC_SIG[k]!==g){ SEC_SIG[k]=g; changed.push(k); } });
@@ -2468,7 +2510,7 @@ function applyConfig_(){
   applySections_();
   if(cfg['앱이름']){ $('appTitle').textContent = cfg['앱이름']; document.title = cfg['앱이름']; }
   var lu=B.iconUrl||cfg['아이콘URL']||cfg['로고URL']||'';
-  if(lu){ var li=$('logoImg'); if(li && li.getAttribute('src')!==lu){ li.src=lu; li.style.display=''; } }
+  if(lu){ var li=$('logoImg'); if(li && li.getAttribute('src')!==lu){ li.src=lu; li.style.display=''; li.style.visibility=''; } }   /* 빈 주소로 시작해 숨겨졌던 것도 다시 보이게 */
   if(cfg['저작권문구']) $('copyrightText').textContent = cfg['저작권문구'];
   if(cfg['테마_기본색']) document.documentElement.style.setProperty('--brand', cfg['테마_기본색']);
   if(cfg['테마_배경색']) document.documentElement.style.setProperty('--bg', cfg['테마_배경색']);
@@ -3537,6 +3579,15 @@ function keepScroll_(y){
 /* ── 시험범위: 과목별 표 ─────────────────────────────────────────
    과목 | 시험(날짜·교시) | 범위(교과서/학습지·쪽수·단원) | 선생님(자동)  — 안내는 눌러서 펼친다 */
 function examPages_(x){ return x.pages ? (/^p/i.test(x.pages)?x.pages:'p.'+x.pages) : ''; }
+/* 범위: "교과서: …\n학습지: …" 형식이면 안내문처럼 줄마다 (예전 형식은 그대로) */
+function examLines_(x){ var out=[]; String(x.range||'').split(/\n+/).forEach(function(l){ var m=l.match(/^\s*(교과서|학습지|기타)\s*[:：]\s*(.*)$/); if(m && m[2].trim()) out.push([m[1], m[2].trim()]); }); return out; }
+function examRangeHtml_(x){
+  var L=examLines_(x);
+  if(L.length) return '<ul class="ex-rl">'+L.map(function(r){ return '<li><b>'+esc_(r[0])+'</b><span>'+esc_(r[1])+'</span></li>'; }).join('')+'</ul>';
+  var kp=[x.kind, examPages_(x)].filter(String).join(' ');
+  return (kp?'<em>'+esc_(kp)+'</em>':'')+'<span>'+esc_(x.range||'')+'</span>';
+}
+function examRangeText_(x){ var L=examLines_(x); if(L.length) return L.map(function(r){ return r[0]+': '+r[1]; }).join('\n'); var kp=[x.kind, examPages_(x)].filter(String).join(' '); return (x.range||'')+(kp?' ('+kp+')':''); }
 function renderExam_(){
   var cut7=addDays_(todayStr_(),-7);   /* 끝난 지 7일이 지난 시험은 목록에서 뺀다 */
   var list=(B.examRanges||[]).filter(function(g){ var e=g.end||g.start; return !e || e>=cut7; }), sec=$('examSection');
@@ -3560,7 +3611,7 @@ function renderExam_(){
       h+='<div class="ex-tr'+(x.notice?' has-n':'')+'"'+(x.notice?' onclick="exToggle_(\''+nid+'\',\''+jq_(x.subject)+'\')"':'')+'>'
         + '<span class="ex-s"><i style="background:'+col.bg+';color:'+col.fg+'">'+esc_(x.subject)+'</i></span>'
         + '<span class="ex-d">'+(x.date?md_(x.date):'<em>미정</em>')+(x.period?' <b>'+esc_(x.period)+'교시</b>':'')+(x.left!=null?'<small class="ex-left'+(x.left<=2?' few':'')+'">수업 '+x.left+'번 남음</small>':'')+'</span>'
-        + '<span class="ex-r">'+(kp?'<em>'+esc_(kp)+'</em>':'')+'<span>'+esc_(x.range||'')+'</span>'+(x.notice?'<u>안내 보기</u>':'')+'</span>'
+        + '<span class="ex-r">'+examRangeHtml_(x)+(x.notice?'<u>안내 보기</u>':'')+'</span>'
         + '<span class="ex-t">'+esc_(t||'')+'</span></div>'
         + (x.notice?'<div class="ex-notice" id="'+nid+'" style="display:none">'+richHtml_(x.notice)+'</div>':'');
     });
@@ -3617,8 +3668,7 @@ function examAt_(d, period){
 }
 function examCellHtml_(ex, notes){
   var col=subjColor_(ex.subject);
-  var kp=[ex.kind, ex.pages?('p.'+String(ex.pages).replace(/^p\.?/i,'')):''].filter(String).join(' ');
-  var tip=ex.exam+' · '+ex.subject+' 시험'+(ex.range?'\n범위: '+ex.range:'')+(kp?' ('+kp+')':'')+(ex.notice?'\n'+mdPlain_(ex.notice).replace(/\s+/g,' ').slice(0,160):'');
+  var tip=ex.exam+' · '+ex.subject+' 시험'+(ex.range||ex.pages?'\n'+examRangeText_(ex):'')+(ex.notice?'\n'+mdPlain_(ex.notice).replace(/\s+/g,' ').slice(0,160):'');
   var nA=noteAttr_((notes||[]).filter(function(n){ return !/^🚨/.test(String(n)); }).concat([tip]));   /* 누르거나 올리면 범위·안내 */
   return '<div class="cell exam" style="background:'+col.bg+';color:'+col.fg+'"'+nA+'>'
     + '<span class="exambadge">시험</span><span class="subj">'+esc_(ex.subject)+'</span><span class="teac ex-name">'+esc_(ex.exam)+'</span></div>';
@@ -3849,6 +3899,7 @@ function loadNotifyState_(){
   var t0=Date.now();
   run('notifyStatus', { deviceId:DEVICE_ID }).then(function(r){
     if(NAME_SAVED && NAME_SAVED.at>=t0) return;           /* 그사이 이름을 저장했으면 늦게 온 대답은 버린다 */
+    if(r&&r.ok) algRestore_(r.alg);
     if(r&&r.ok){
       NOTIFY_STATE={subscribed:!!r.subscribed,name:r.name||'',email:r.email||'',own:!!r.own,registered:!!(r.registered||r.email)};
       renderNotify_(); updateNotifyBtn_();
@@ -4517,16 +4568,38 @@ try{ window.addEventListener('message', function(e){
   }
 }); }catch(e){}
 /* 정적 모드(앱을 GitHub 에서 바로 띄움): 휴대폰에 저장된 첫 화면 자료로 바로 그리고 최신 자료는 뒤에서 · 저장된 것이 없으면 받아서 시작 */
-function bootKeep_(b){ try{ if(window.__API__ && b && b.config) localStorage.setItem('tt_boot', JSON.stringify(b)); }catch(e){} }
+function bootKeep_(b){ try{ if(window.__API__ && b && b.config){ b.savedAt=Date.now(); localStorage.setItem('tt_boot', JSON.stringify(b)); } }catch(e){} }
+/* 제안 1: 인터넷이 없어도 저장된 앱·자료로 그대로 · 위에 '연결 안 됨' 띠 · 다시 연결되면 최신으로 */
+function netBar_(on){
+  var bar=$('netBar');
+  if(!on){ if(bar) bar.remove(); return; }
+  if(!bar){ bar=document.createElement('div'); bar.id='netBar'; bar.className='net-bar'; document.body.appendChild(bar); }
+  var at=(B&&B.savedAt)?new Date(B.savedAt):null, when=at?((at.getMonth()+1)+'/'+at.getDate()+' '+('0'+at.getHours()).slice(-2)+':'+('0'+at.getMinutes()).slice(-2)):'';
+  bar.innerHTML='<b>● 연결 안 됨</b><span>'+(when?when+' 자료로 보여 주고 있어요':'저장된 자료로 보여 주고 있어요')+'</span>';
+}
+if(window.__API__){
+  window.addEventListener('offline', function(){ netBar_(true); });
+  window.addEventListener('online', function(){ netBar_(false); SILENT_GATE=0; try{ silentBootRefresh_(); }catch(e){} });
+}
+/* 제안 2: 서버가 새 버전인데 이 기기의 앱이 옛 버전이면 안내 → 누르면 새 앱을 받아 바로 바꾼다 */
+function verCheck_(){
+  try{
+    if(!window.__API__ || !window.__APP_BUILD__ || !B || !B.build || B.build===window.__APP_BUILD__ || $('verBar')) return;
+    var bar=document.createElement('button'); bar.id='verBar'; bar.className='ver-bar'; bar.type='button';
+    bar.innerHTML='✨ 새 버전이 있어요 <b>눌러서 적용</b>';
+    bar.onclick=function(){ bar.innerHTML='새 버전 받는 중…'; fetch('/app.html?__update='+Date.now(), { cache:'no-store' }).then(function(){ try{ localStorage.setItem('tt_y', JSON.stringify({ y:window.scrollY||0, t:Date.now() })); }catch(e){} postParent_({ c16:'reload' }); setTimeout(function(){ location.reload(); }, 2500); }).catch(function(){ location.reload(); }); };
+    document.body.appendChild(bar);
+  }catch(e){}
+}
 function replayMsgs_(){ window.__APP_READY=true; var q=MSGQ.splice(0); q.forEach(function(e){ try{ window.dispatchEvent(new MessageEvent('message', { data:e.data, origin:e.origin, source:e.source })); }catch(x){} }); }
 function boot_(){ if(BOOTED) return; BOOTED=true;
   if(window.__API__ && (!B || !B.config || B.pending)){
-    run('getBootData', { deviceId:getDeviceId_() }).then(function(nb){ if(nb && nb.config){ B=nb; TT=B.timetable||null; RANK=B.rank||null; bootKeep_(nb); init(); } else { postParent_({ c16:'staticFail' }); init(); } })
+    run('getBootData', { deviceId:getDeviceId_() }).then(function(nb){ if(nb && nb.config){ B=nb; TT=B.timetable||null; RANK=B.rank||null; bootKeep_(nb); init(); verCheck_(); } else { postParent_({ c16:'staticFail' }); init(); } })
       .catch(function(){ postParent_({ c16:'staticFail' }); init(); });   /* 자료 입구가 막혔으면 부모가 예전 방식(구글 화면)으로 다시 연다 */
     return;
   }
   init();
-  if(window.__API__ && B && B.fromLocal) setTimeout(function(){ SILENT_GATE=0; silentBootRefresh_(); }, 60);   /* 저장된 자료로 그렸으면 곧바로 최신으로 */
+  if(window.__API__ && B && B.fromLocal){ if(navigator.onLine===false) netBar_(true); else setTimeout(function(){ SILENT_GATE=0; silentBootRefresh_(); }, 60); }   /* 저장된 자료로 그렸으면 곧바로 최신으로 (연결이 없으면 띠만) */
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot_);
 else boot_();
@@ -5940,6 +6013,7 @@ function updateBadge_(){
    시간표 아래: 오늘(주말·쉬는 날이면 다음 급식 날) · 모두 › → 달마다
    알레르기는 이 기기에서 고른 것만 표시 (설정 → 알레르기), 메일에도 같은 표시 */
 var ALG=['','난류','우유','메밀','땅콩','대두','밀','고등어','게','새우','돼지고기','복숭아','토마토','아황산류','호두','닭고기','쇠고기','오징어','조개류','잣'];
+function algRestore_(a){ try{ if(a && !stGet_('tt_alg')){ stSet_('tt_alg', String(a)); if(typeof renderMeal_==='function') renderMeal_(); } }catch(e){} }   /* 기기에 없으면 서버에 저장된 알레르기 설정으로 */
 function myAlg_(){ try{ return (stGet_('tt_alg')||'').split(',').map(Number).filter(function(n){ return n>=1&&n<=19; }); }catch(e){ return []; } }
 function dishHtml_(d, mine){
   var hit=(d.a||[]).filter(function(n){ return mine.indexOf(n)>=0; });
@@ -6004,9 +6078,9 @@ function drawMeals_(){
   $('mealPopT').textContent=MEAL_YM.replace('-','년 ')+'월 급식';
   var ym=MEAL_YM, body=$('mealPopBody');
   var show=function(days){
-    if(ym!==MEAL_YM || !body) return; body.innerHTML=mealCalHtml_(ym, days||{}); body.style.paddingBottom='';
+    if(ym!==MEAL_YM || !body) return; var nar=mealNarrow_(); pop.classList.toggle('narrow', nar); body.innerHTML=nar?mealListHtml_(ym, days||{}):mealCalHtml_(ym, days||{}); body.style.paddingBottom='';
     try{ var cs=[].slice.call(body.querySelectorAll('.mlc-c')).map(function(x){ return x.offsetHeight; }).filter(function(h){ return h>40; }).sort(function(a,b){ return a-b; }); if(cs.length) stSet_('tt_mealCellH', String(cs[Math.floor(cs.length/2)])); }catch(eC){}
-    var t=body.querySelector('.mlc-row.has-today'); if(!t){ body.scrollTop=0; return; }
+    var t=body.querySelector('.mlc-row.has-today, .mll-day.today'); if(!t){ body.scrollTop=0; return; }
     var top=t.getBoundingClientRect().top-body.getBoundingClientRect().top+body.scrollTop, below=body.scrollHeight-top;
     if(below<body.clientHeight) body.style.paddingBottom=(body.clientHeight-below)+'px';   /* 오늘 줄을 맨 위로 올릴 수 있게 */
     body.scrollTop=top;
@@ -6014,7 +6088,7 @@ function drawMeals_(){
   var kept=mealKept_(ym);
   if(MEAL_CACHE[ym]) show(MEAL_CACHE[ym]);
   else if(kept){ show(kept); mealFetch_(ym, function(days){ if(JSON.stringify(days)!==JSON.stringify(kept)) show(days); }); }   /* 기기에 저장된 달 → 바로 · 최신이 오면 조용히 바꿈 */
-  else { body.innerHTML=mealCalSkel_(ym); mealFetch_(ym, show); }
+  else { pop.classList.toggle('narrow', mealNarrow_()); body.innerHTML=mealNarrow_()?'<div class="skel-box" style="height:'+Math.round(Math.max(300, (window.innerHeight||700)*0.6))+'px"></div>':mealCalSkel_(ym); mealFetch_(ym, show); }
   [-1,1].forEach(function(k){ var y=Number(ym.slice(0,4)), m=Number(ym.slice(5,7))+k; if(m<1){ m=12; y--; } if(m>12){ m=1; y++; } mealFetch_(y+'-'+('0'+m).slice(-2)); });   /* 앞뒤 달은 미리 */
 }
 var MEAL_WAIT={};
@@ -6026,6 +6100,23 @@ function mealFetch_(ym, cb){
     .catch(function(){ var cbs=MEAL_WAIT[ym]||[]; delete MEAL_WAIT[ym]; cbs.forEach(function(f){ f({}); }); });
 }
 /* 달력: 월~금 5칸 · 칸마다 날짜와 메뉴 · 알레르기 ⚠ · 지난 날은 연하게 · 오늘 강조 */
+/* 휴대폰 폭: 5칸 달력 대신 날짜별 목록 (메뉴를 한 줄로 이어서 · 주마다 묶음) — 이미지 저장은 달력 그대로 */
+function mealNarrow_(){ return (window.innerWidth||document.documentElement.clientWidth||999) < 560; }
+function mealListHtml_(ym, days){
+  var y=Number(ym.slice(0,4)), m=Number(ym.slice(5,7)), last=new Date(y,m,0).getDate(), today=todayStr_(), mine=myAlg_(), W='일월화수목금토', h='', any=false, wk=-1;
+  for(var dn=1; dn<=last; dn++){
+    var dd=new Date(y,m-1,dn), w=dd.getDay(); if(w===0||w===6) continue;
+    var ds=fmtD_(dd), ml=days[ds], hol=isHoliday_(ds), mon=fmtD_(new Date(y,m-1,dn-((w+6)%7)));
+    var inner='';
+    if(ml && ml.length){ any=true; inner=ml.map(function(x){ return x.dishes.map(function(di){ var hit=(di.a||[]).some(function(n){ return mine.indexOf(n)>=0; }); return '<span'+(hit?' class="w"':'')+'>'+(hit?'⚠ ':'')+esc_(di.n)+'</span>'; }).join(''); }).join(''); }
+    else if(hol) inner='<em class="hol">'+esc_(String(hol).split(' · ')[0])+'</em>';
+    else inner='<em class="none">급식 정보 없음</em>';
+    if(mon!==wk){ if(wk!==-1) h+='</div>'; h+='<div class="mll-wk">'; wk=mon; }
+    h+='<div class="mll-day'+(ds===today?' today':'')+(ds<today?' past':'')+'"><div class="mll-d"><b>'+dn+'</b><small>'+W[w]+'</small></div><div class="mll-m">'+inner+'</div></div>';
+  }
+  if(wk!==-1) h+='</div>';
+  return any?h:h+'<div class="ml-none">이 달 급식 정보가 없어요.</div>';
+}
 function mealCalHtml_(ym, days, forPrint){
   var y=Number(ym.slice(0,4)), m=Number(ym.slice(5,7)), first=new Date(y,m-1,1), last=new Date(y,m,0), today=forPrint?'':todayStr_(), mine=(forPrint&&forPrint!=='alg')?[]:myAlg_();
   var d=new Date(first); d.setDate(d.getDate()-((d.getDay()+6)%7));

@@ -11,20 +11,19 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="1-6♥️">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>1학년 6반 건의 서비스</title>
-  <meta name="description" content="1학년 6반 건의 서비스입니다.">
-  <link rel="canonical" href="https://1-6.웹.한국/">
+  <title>학급 서비스</title>
+  <meta name="description" content="우리 반 시간표·공지·급식·건의를 한곳에서">
   <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="https://script.googleusercontent.com">
   <meta property="og:type" content="profile">
-  <meta property="og:url" content="https://1-6.웹.한국/">
-  <meta property="og:title" content="1학년 6반 건의 서비스">
-  <meta property="og:description" content="1학년 6반 건의 서비스입니다.">
+  <meta property="og:url" content="">
+  <meta property="og:title" content="학급 서비스">
+  <meta property="og:description" content="우리 반 시간표·공지·급식·건의를 한곳에서">
   <meta property="og:image" content="https://i.imgur.com/Ooev1wG.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#F4F6FB">
+  <meta name="theme-color" content="#4361EE">
   <link rel="icon" id="favIc" href="https://lh3.googleusercontent.com/d/18scqyld91nNMDuAGyrsq-I721g_OoBuj=s64-rp">
     <link rel="apple-touch-icon" id="appleIc" href="https://lh3.googleusercontent.com/d/18scqyld91nNMDuAGyrsq-I721g_OoBuj=s180-rp">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -71,8 +70,13 @@
     <div class="msg" id="bootMsg"></div>
     <div class="btns"><button class="p" id="bootRetry">다시 불러오기</button><a class="g" id="bootOpen" target="_top">바로 열기</a></div>
   </div>
-  <iframe id="site" title="1학년 6반 건의 서비스" allow="clipboard-write; clipboard-read" loading="eager"></iframe>
+  <iframe id="site" title="학급 서비스" allow="clipboard-write; clipboard-read" loading="eager"></iframe>
   <script>
+  /* 이름도 고정하지 않는다: 시트 [설정] 앱이름 (앱이 알려 준 것을 기억) */
+  function setAppName(n){ try { n = String(n || '').trim(); if (!n) return; document.title = n; var f = document.getElementById('site'); if (f) f.title = n; var t = document.querySelector('meta[property="og:title"]'); if (t) t.setAttribute('content', n); } catch (e) {} }
+  try { setAppName(localStorage.getItem('c16_name')); } catch (eN) {}
+  /* 사이트 주소는 고정하지 않는다: 지금 열린 주소로 */
+  try { var cl=document.createElement('link'); cl.rel='canonical'; cl.href=location.origin+'/'; document.head.appendChild(cl); var og=document.querySelector('meta[property="og:url"]'); if (og) og.setAttribute('content', location.origin+'/'); } catch (eC) {}
   (function(){
     var APP = 'https://script.google.com/macros/s/AKfycbwFKU9x3iXDvTgPNUMujRM33Hr6mRi8EBthLLqMn_ygWfemzhtmVrwsRKJmx7D84ia24g/exec';
     var boot = document.getElementById('boot'), frame = document.getElementById('site');
@@ -113,7 +117,9 @@
         localStorage.setItem('c16_snap', JSON.stringify({ html: d.html, css: d.css || '', at: d.at || Date.now(), build: d.build || '' }));
       } catch (e) { try { localStorage.removeItem('c16_snap'); } catch (e2) {} }
     }
-    var USE_GAS = false;   /* 정적 앱이 아예 안 뜨거나 자료 입구가 막힌 경우에만 예전 방식으로 (앱이 요청한 다시 열기는 정적 앱으로) */
+    var USE_GAS = false;
+    /* 부관리자 초대 코드: 앱에 한 번 넘기고 주소창에서는 지운다 (기록·공유에 코드가 남지 않게) */
+    var SUB_INV = ''; try { var mInv = location.search.match(/[?&]sub=([A-Za-z0-9_-]{4,40})/); if (mInv) { SUB_INV = mInv[1]; var u0 = new URL(location.href); u0.searchParams.delete('sub'); history.replaceState(null, '', u0.pathname + (u0.search || '') + u0.hash); } } catch (eInv) {}   /* 정적 앱이 아예 안 뜨거나 자료 입구가 막힌 경우에만 예전 방식으로 (앱이 요청한 다시 열기는 정적 앱으로) */
     var STATIC_OK = location.protocol !== 'file:' && !/[?&]gas=1/.test(location.search) && ls('c16_mode') !== 'gas';   /* 비상 스위치: 주소 뒤 ?gas=1 이면 예전 방식(구글 화면)으로 */
     /* 지난 화면 사진(가짜 화면)은 쓰지 않는다 — 앱 자체가 저장된 자료로 바로 뜬다 */
     /* 인터넷이 돌아오면 다시 불러온다 */
@@ -220,8 +226,10 @@
        안 뜨면 다시 열 때는 예전처럼 구글 화면 페이지로 (안전장치) */
     function appUrl(fresh){
       var vw = (location.search.match(/[?&]view=(today|tt)\b/) || [])[1];   /* 교실 모니터: 주소 뒤 ?view=today 를 앱에도 */
-      if (STATIC_OK && !USE_GAS) return '/app.html?d=' + encodeURIComponent(deviceId()) + (vw ? '&view=' + vw : '') + (fresh ? '&_r=' + Date.now() : '');
-      return APP + (vw ? '?view=' + vw + '&d=' : '?d=') + encodeURIComponent(deviceId()) + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : ''); }
+      var inv = SUB_INV ? '&sub=' + encodeURIComponent(SUB_INV) : '';        /* 부관리자 초대 QR */
+      if (STATIC_OK && !USE_GAS) return '/app.html?d=' + encodeURIComponent(deviceId()) + (vw ? '&view=' + vw : '') + inv + (fresh ? '&_r=' + Date.now() : '');
+      return APP + '?d=' + encodeURIComponent(deviceId()) + (vw ? '&view=' + vw : '') + inv + (MY_IP ? '&ip=' + encodeURIComponent(MY_IP) : '') + (fresh ? '&fresh=1&_r=' + Date.now() : '');
+    }
     function loadApp(fresh, keepMsg){
       ready = false; booted = false; bootAt = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       if (!loadT0) loadT0 = Date.now();
@@ -243,7 +251,7 @@
       booted = true; bootAt = Date.now(); clearTimeout(readyTm);
       readyTm = setTimeout(function(){ if (!ready) failMsg(); }, 60000);     /* 시작은 했는데 1분이 지나도 안 되면 그때 안내 */
     }
-    function onReady(d){
+    function onReady(d){ try { if (d && d.name) { localStorage.setItem('c16_name', d.name); setAppName(d.name); } } catch (eAN) {}
       if (loadT0) { var nowT = Date.now(); LOAD = { ms: nowT - loadT0, tries: tries, html: bootAt ? bootAt - loadT0 : 0, app: bootAt ? nowT - bootAt : 0 }; loadT0 = 0; }
       ready = true; tries = 0; clearTimeout(readyTm); clearTimeout(slowTm);
       /* 즉시 화면을 내려 보던 중이면 앱도 그 위치에서 시작 (위로 튕기지 않게) */
